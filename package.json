@@ -1,0 +1,17 @@
+{
+  "name": "simpadk.api",
+  "version": "1.0.0",
+  "description": "api for SIM-PADK",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./app/index.js"
+  },
+  "author": "xambinx",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.15.2",
+    "express": "^4.14.0",
+    "mysql": "^2.11.1",
+    "require-dir": "^0.3.0"
+  }
+}
