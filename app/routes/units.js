@@ -6,59 +6,107 @@ var connection = require('../config/db');
 var apikey = require('../config/apikey');
 var rowcount=30;
 
-app.get("/units",function(req,response){
-	var res;
-	unitview(0,1,1,function(res){
-		response.send(res);
+app.get("/api/:key/units",function(req,response){
+	var key=req.params.key;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			unitview(0,1,1,function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
 	});
+	
 });
-app.get("/units/:id/",function(req,response){
+app.get("/api/:key/units/:id/",function(req,response){
 	var id=req.params.id;
-	var res;
-	unitview(id,1,1,function(res){
-		response.send(res);
+	var key=req.params.key;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			unitview(id,1,1,function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
 	});
+	
 });
-app.get("/units/:id/:page",function(req,response){
+app.get("/api/:key/units/:id/:page",function(req,response){
 	var id=req.params.id;
 	var page=req.params.page;
-	var res;
-	unitview(id,page,1,function(res){
-		response.send(res);
+	var key=req.params.key;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			unitview(id,page,1,function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
 	});
+	
 });
 
-app.post("/units",function(req,response){
+app.post("/api/:key/units",function(req,response){
 	var unit_id=req.body.unit_id;
 	var satuan_id=req.body.satuan_id;
 	var satuan_id=req.body.satuan_id;
 	var unit_nama=req.body.unit_nama;
 	var remarks=req.body.remarks;
 	var isactive=req.body.isactive;
-	var res;
-	unitsave(unit_id,satuan_id,satuan_id,unit_nama,remarks,isactive,function(res){
-		response.send(res);
+	var key=req.params.key;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			unitsave(unit_id,satuan_id,satuan_id,unit_nama,remarks,isactive,function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
 	});
+	
 });
 
-app.post("/units",function(req,response){
+app.post("/api/:key/units",function(req,response){
 	var satuan_id=req.body.satuan_id;
 	var satuan_nama=req.body.satuan_nama;
 	var remarks=req.body.remarks;
 	var isactive=req.body.isactive;
-	var res;
-	unitsave(satuan_id,satuan_nama,remarks,isactive,function(res){
-		response.send(res);
+	var key=req.params.key;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			unitsave(satuan_id,satuan_nama,remarks,isactive,function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
 	});
+	
 });
 
-app.delete("/units/:id/:permanent",function(req,response){
+app.delete("/api/:key/units/:id/:permanent",function(req,response){
 	var id=req.params.id;
 	var permanent=req.params.permanent;
-	var res;
-	unitdelete(id,permanent,function(res){
-		response.send(res);
+	var key=req.params.key;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			unitdelete(id,permanent,function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
 	});
+	
 });
 
 function isLogged(key,cb){
