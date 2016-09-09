@@ -1,0 +1,32 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_api_checkapikey`(
+_apikey TEXT
+,_userid INT
+)
+BEGIN
+
+IF(SELECT COUNT(*) FROM apikey WHERE (apikey=_apikey OR user_id=_userid) AND NOW()>expired_date)>0
+THEN DELETE FROM apikey where apikey=_apikey;
+end if;
+UPDATE apikey SET expired_date = DATE_ADD(NOW(), INTERVAL 2 HOUR) WHERE apikey=_apikey  OR user_id=_userid;
+SELECT * FROM apikey WHERE apikey=_apikey  OR user_id=_userid;
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_api_insertapikey`(
+_user_id INT
+,_apikey TEXT
+,_user_level int
+)
+BEGIN
+INSERT INTO apikey (user_id,apikey,user_level,expired_date)
+VALUES(_user_id,_apikey,_user_level,DATE_ADD(NOW(), INTERVAL 2 HOUR));
+
+SELECT * FROM apikey WHERE apikey=_apikey;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_us_checklogin`(
+_user_name NVARCHAR(20),
+_password TEXT)
+BEGIN
+SELECT user_id,user_name,user_level FROM user WHERE user_name=_user_name AND password=_password;
+END
