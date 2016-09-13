@@ -6,12 +6,12 @@ var connection = require('../config/db');
 var apikey = require('../config/apikey');
 var rowcount=30;
 
-app.get("/api/:key/units",function(req,response){
+app.get("/api/:key/brands",function(req,response){
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitview(0,1,1,function(res){
+			brandview(0,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -20,29 +20,30 @@ app.get("/api/:key/units",function(req,response){
 	});
 	
 });
-app.get("/api/:key/units/:id/",function(req,response){
+app.get("/api/:key/brands/:id/",function(req,response){
 	var id=req.params.id;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitview(id,1,1,function(res){
+			brandview(id,1,1,function(res){
 				response.send(res);
 			});
 		}else{
 			response.send("invalid apikey");
 		}
+
 	});
 	
 });
-app.get("/api/:key/units/:id/:page",function(req,response){
+app.get("/api/:key/brands/:id/:page",function(req,response){
 	var id=req.params.id;
 	var page=req.params.page;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitview(id,page,1,function(res){
+			brandview(id,page,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -52,16 +53,17 @@ app.get("/api/:key/units/:id/:page",function(req,response){
 	
 });
 
-app.post("/api/:key/units",function(req,response){
-	var satuan_id=req.body.satuan_id;
-	var satuan_nama=req.body.satuan_nama;
+
+app.post("/api/:key/brands",function(req,response){
+	var merk_id=req.body.merk_id;
+	var merk_nama=req.body.merk_nama;
 	var remarks=req.body.remarks;
 	var isactive=req.body.isactive;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitsave(satuan_id,satuan_nama,remarks,isactive,function(res){
+			brandsave(merk_id,merk_nama,remarks,isactive,function(res){
 				response.send(res);
 			});
 		}else{
@@ -71,14 +73,14 @@ app.post("/api/:key/units",function(req,response){
 	
 });
 
-app.delete("/api/:key/units/:id/:permanent",function(req,response){
+app.delete("/api/:key/brands/:id/:permanent",function(req,response){
 	var id=req.params.id;
 	var permanent=req.params.permanent;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitdelete(id,permanent,function(res){
+			branddelete(id,permanent,function(res){
 				response.send(res);
 			});
 		}else{
@@ -100,8 +102,8 @@ function isLogged(key,cb){
 
 }
 
-function unitview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_st_viewsatuanlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+function brandview(id,page,isactive, cb){
+var q=ut.format("CALL `simpadk`.`sp_mr_viewmerklist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -110,8 +112,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function unitsave(satuan_id,satuan_nama,remarks,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_st_savesatuan`( %d, '%s', '%s', %d);",satuan_id,satuan_nama,remarks,isactive);
+function brandsave(merk_id,merk_nama,remarks,isactive,cb){
+var q=ut.format("CALL `simpadk`.`sp_mr_savemerk`( %d, '%s', '%s', %d);",merk_id,merk_nama,remarks,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -120,8 +122,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function unitdelete(satuan_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_st_deletesatuan`(%d, %d);",satuan_id,delete_permanent);
+function branddelete(merk_id,delete_permanent,cb){
+var q=ut.format("CALL `simpadk`.`sp_mr_deletemerk`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

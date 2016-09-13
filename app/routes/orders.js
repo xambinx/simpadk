@@ -6,12 +6,12 @@ var connection = require('../config/db');
 var apikey = require('../config/apikey');
 var rowcount=30;
 
-app.get("/api/:key/brands",function(req,response){
+app.get("/api/:key/orders",function(req,response){
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			brandview(0,1,1,function(res){
+			orderview(0,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -20,13 +20,13 @@ app.get("/api/:key/brands",function(req,response){
 	});
 	
 });
-app.get("/api/:key/brands/:id/",function(req,response){
+app.get("/api/:key/orders/:id/",function(req,response){
 	var id=req.params.id;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			brandview(id,1,1,function(res){
+			orderview(id,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -36,14 +36,14 @@ app.get("/api/:key/brands/:id/",function(req,response){
 	});
 	
 });
-app.get("/api/:key/brands/:id/:page",function(req,response){
+app.get("/api/:key/orders/:id/:page",function(req,response){
 	var id=req.params.id;
 	var page=req.params.page;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			brandview(id,page,1,function(res){
+			orderview(id,page,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -53,18 +53,23 @@ app.get("/api/:key/brands/:id/:page",function(req,response){
 	
 });
 
-app.post("/api/:key/brands",function(req,response){
-	var brand_id=req.body.brand_id;
-	var merk_id=req.body.merk_id;
-	var satuan_id=req.body.satuan_id;
-	var brand_nama=req.body.brand_nama;
+app.post("/api/:key/orders",function(req,response){
+	
+	var order_id=req.body.order_id;
+	var order_date=req.body.order_date;
+	var user_id=req.body.user_id;
+	var customer_id=req.body.customer_id;
+	var total=req.body.total;
+	var discount=req.body.discount;
+	var grand_total=req.body.grand_total;
+	var delivery_date=req.body.delivery_date;
+	var isdelivered=req.body.isdelivered;
 	var remarks=req.body.remarks;
-	var isactive=req.body.isactive;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			brandsave(brand_id,merk_id,satuan_id,brand_nama,remarks,isactive,function(res){
+			ordersave(order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks,function(res){
 				response.send(res);
 			});
 		}else{
@@ -74,33 +79,14 @@ app.post("/api/:key/brands",function(req,response){
 	
 });
 
-app.post("/api/:key/brands",function(req,response){
-	var merk_id=req.body.merk_id;
-	var merk_nama=req.body.merk_nama;
-	var remarks=req.body.remarks;
-	var isactive=req.body.isactive;
-	var key=req.params.key;
-	isLogged(key,function(log){
-		if(log){
-			var res;
-			brandsave(merk_id,merk_nama,remarks,isactive,function(res){
-				response.send(res);
-			});
-		}else{
-			response.send("invalid apikey");
-		}
-	});
-	
-});
-
-app.delete("/api/:key/brands/:id/:permanent",function(req,response){
+app.delete("/api/:key/orders/:id/:permanent",function(req,response){
 	var id=req.params.id;
 	var permanent=req.params.permanent;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			branddelete(id,permanent,function(res){
+			orderdelete(id,permanent,function(res){
 				response.send(res);
 			});
 		}else{
@@ -122,8 +108,8 @@ function isLogged(key,cb){
 
 }
 
-function brandview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_mr_viewmerklist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+function orderview(id,page,isactive, cb){
+var q=ut.format("CALL `simpadk`.`sp_od_vieworderlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -132,8 +118,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function brandsave(merk_id,merk_nama,remarks,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_mr_savemerk`( %d, '%s', '%s', %d);",merk_id,merk_nama,remarks,isactive);
+function ordersave(order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks,cb){
+var q=ut.format("CALL `simpadk`.`sp_od_saveorder`( %d, '%s', %d, %d, %d, %d, %d, '%s', %d,'%s');",order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -142,8 +128,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function branddelete(merk_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_mr_deletemerk`(%d, %d);",merk_id,delete_permanent);
+function orderdelete(merk_id,delete_permanent,cb){
+var q=ut.format("CALL `simpadk`.`sp_od_deleteorder`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

@@ -1,6 +1,12 @@
 # simpadk
 Sistem Informasi Management Penjualan Air Minum Dalam Kemasan
 =============================================================
+changelog:13 sept
+-update sp: "update sql.txt"
+-update postman: check folder postman, import to postman
+-update api: now cover:user,product,brand,unit,customer, customer_price, oredr,order_item.
+
+
 api documentation
 =================
 Products

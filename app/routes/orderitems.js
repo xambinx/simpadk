@@ -6,12 +6,12 @@ var connection = require('../config/db');
 var apikey = require('../config/apikey');
 var rowcount=30;
 
-app.get("/api/:key/units",function(req,response){
+app.get("/api/:key/orderitems",function(req,response){
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitview(0,1,1,function(res){
+			orderitemview(0,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -20,29 +20,30 @@ app.get("/api/:key/units",function(req,response){
 	});
 	
 });
-app.get("/api/:key/units/:id/",function(req,response){
+app.get("/api/:key/orderitems/:id/",function(req,response){
 	var id=req.params.id;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitview(id,1,1,function(res){
+			orderitemview(id,1,1,function(res){
 				response.send(res);
 			});
 		}else{
 			response.send("invalid apikey");
 		}
+
 	});
 	
 });
-app.get("/api/:key/units/:id/:page",function(req,response){
+app.get("/api/:key/orderitems/:id/:page",function(req,response){
 	var id=req.params.id;
 	var page=req.params.page;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitview(id,page,1,function(res){
+			orderitemview(id,page,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -52,16 +53,20 @@ app.get("/api/:key/units/:id/:page",function(req,response){
 	
 });
 
-app.post("/api/:key/units",function(req,response){
-	var satuan_id=req.body.satuan_id;
-	var satuan_nama=req.body.satuan_nama;
-	var remarks=req.body.remarks;
-	var isactive=req.body.isactive;
+app.post("/api/:key/orderitems",function(req,response){
+
+	var orderitem_id=req.body.orderitem_id;
+	var order_id=req.body.order_id;
+	var product_id=req.body.product_id;
+	var customer_price_id=req.body.customer_price_id;
+	var customer_price=req.body.customer_price;
+	var quantity=req.body.quantity;
+	var subtotal=req.body.subtotal;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitsave(satuan_id,satuan_nama,remarks,isactive,function(res){
+			orderitemsave(orderitem_id,order_id,product_id,customer_price_id,customer_price,quantity,subtotal,function(res){
 				response.send(res);
 			});
 		}else{
@@ -71,14 +76,14 @@ app.post("/api/:key/units",function(req,response){
 	
 });
 
-app.delete("/api/:key/units/:id/:permanent",function(req,response){
+app.delete("/api/:key/orderitems/:id/:permanent",function(req,response){
 	var id=req.params.id;
 	var permanent=req.params.permanent;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			unitdelete(id,permanent,function(res){
+			orderitemdelete(id,permanent,function(res){
 				response.send(res);
 			});
 		}else{
@@ -100,8 +105,8 @@ function isLogged(key,cb){
 
 }
 
-function unitview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_st_viewsatuanlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+function orderitemview(id,page,isactive, cb){
+var q=ut.format("CALL `simpadk`.`sp_oi_vieworderitemlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -110,8 +115,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function unitsave(satuan_id,satuan_nama,remarks,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_st_savesatuan`( %d, '%s', '%s', %d);",satuan_id,satuan_nama,remarks,isactive);
+function orderitemsave(orderitem_id,order_id,product_id,customer_price_id,customer_price,quantity,subtotal,cb){
+var q=ut.format("CALL `simpadk`.`sp_oi_saveorderitem`( %d, %d, %d, %d, %d, %d, %d);",orderitem_id,order_id,product_id,customer_price_id,customer_price,quantity,subtotal);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -120,8 +125,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function unitdelete(satuan_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_st_deletesatuan`(%d, %d);",satuan_id,delete_permanent);
+function orderitemdelete(merk_id,delete_permanent,cb){
+var q=ut.format("CALL `simpadk`.`sp_oi_deleteorderitem`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

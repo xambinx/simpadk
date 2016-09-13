@@ -47,34 +47,14 @@ app.get("/api/:key/users/:id/:page",function(req,response){
 app.post("/api/:key/users",function(req,response){
 	var user_id=req.body.user_id;
 	var user_name=req.body.user_name;
-	var user_id=req.body.user_id;
-	var user_nama=req.body.user_nama;
-	var remarks=req.body.remarks;
+	var password=req.body.password;
+	var user_level=req.body.user_level;
 	var isactive=req.body.isactive;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			usersave(user_id,user_id,user_id,user_nama,remarks,isactive,function(res){
-				response.send(res);
-			});
-		}else{
-			response.send("invalid apikey");
-		}
-	});
-	
-});
-
-app.post("/api/:key/users",function(req,response){
-	var user_id=req.body.user_id;
-	var user_name=req.body.user_name;
-	var remarks=req.body.remarks;
-	var isactive=req.body.isactive;
-	var key=req.params.key;
-	isLogged(key,function(log){
-		if(log){
-			var res;
-			usersave(user_id,user_nama,remarks,isactive,function(res){
+			usersave(user_id,user_name,password,user_level,isactive,function(res){
 				response.send(res);
 			});
 		}else{
@@ -124,7 +104,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function usersave(user_id,user_name,password,user_level,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_us_saveuser`( %d, '%s', '%s', %d);",user_id,user_name,password,user_level,isactive);
+var q=ut.format("CALL `simpadk`.`sp_us_saveuser`( %d, '%s', '%s', %d, %d);",user_id,user_name,password,user_level,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
