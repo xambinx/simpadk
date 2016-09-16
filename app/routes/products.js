@@ -64,12 +64,14 @@ app.post("/api/:key/products",function(req,response){
 	var satuan_id=req.body.satuan_id;
 	var product_nama=req.body.product_nama;
 	var remarks=req.body.remarks;
+	var stock=req.body.stock;
+	var min_stock=req.body.min_stock;
 	var isactive=req.body.isactive;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			productsave(product_id,merk_id,satuan_id,product_nama,remarks,isactive,function(res){
+			productsave(product_id,merk_id,satuan_id,product_nama,remarks,stock,min_stock,isactive,function(res){
 				response.send(res);
 			});
 		}else{
@@ -119,8 +121,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function productsave(product_id,merk_id,satuan_id,product_nama,remarks,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_pr_saveproduct`(%d,%d, %d, '%s', '%s', %d);",product_id,merk_id,satuan_id,product_nama,remarks,isactive);
+function productsave(product_id,merk_id,satuan_id,product_nama,remarks,stock,min_stock,isactive,cb){
+var q=ut.format("CALL `simpadk`.`sp_pr_saveproduct`(%d,%d, %d, '%s', '%s', %d, %d, %d);",product_id,merk_id,satuan_id,product_nama,remarks,stock,min_stock,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
