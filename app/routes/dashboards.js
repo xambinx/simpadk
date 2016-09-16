@@ -22,6 +22,25 @@ app.get("/api/:key/dashboards/saleswidget",function(req,response){
 	
 });
 
+app.get("/api/:key/dashboards/graphic/:type",function(req,response){
+	var key=req.params.key;
+	var type=req.params.type;
+	
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			var currentTime = new Date();
+			dashboardgraph(type,function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
+	});
+	
+});
+
+
 app.get("/api/:key/dashboards/delivery",function(req,response){
 	var key=req.params.key;
 	isLogged(key,function(log){
@@ -73,6 +92,17 @@ connection.query(q, function(err, rows, fields) {
 	  	return cb(rows[0]);
 	});
 };
+
+function dashboardgraphic(type, cb){
+var q=ut.format("CALL `simpadk`.`sp_ds_getgraphic`('%s');",type);
+	
+connection.query(q, function(err, rows, fields) {
+		if(err)
+		console.log(err); // null
+	  	return cb(rows[0]);
+	});
+};
+
 
 function dashboarddelivery( cb){
 var q=ut.format("CALL `simpadk`.`sp_ds_getpendingdeliveredorder`;");
