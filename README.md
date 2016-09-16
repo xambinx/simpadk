@@ -6,7 +6,15 @@ changelog:13 sept
 -update postman: check folder postman, import to postman
 -update api: now cover:user,product,brand,unit,customer, customer_price, oredr,order_item.
 
-
+changelog:16 sept
+-add feature:
+	-changepassword> url POST:localhost:3000/api/[apikey]/users/changepassword field: user_id, old_password, new_password 
+	-dashboard
+		-sales> url GET:localhost:3000/api/[apikey]/dashboards/saleswidget
+		-delivery status> url GET:localhost:3000/api/[apikey]/dashboards/delivery
+		-stock> url GET:localhost:3000/api/[apikey]/dashboards/stock
+-check folder updates for new & updated stored procedure
+		
 api documentation
 =================
 Products

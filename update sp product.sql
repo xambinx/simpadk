@@ -3,10 +3,10 @@ product_id INT
 ,merk_id INT
 ,satuan_id INT
 ,product_nama nvarchar(100)
+,remarks TEXT
 ,stock INT
 ,min_stock INT
 
-,remarks TEXT
 ,isactive BIT
 )
 BEGIN
