@@ -5,13 +5,18 @@ var app = exp();
 var connection = require('../config/db');
 var apikey = require('../config/apikey');
 var _crypt = require('../config/crypt');
+var user_nama = "";
+var password = "";
+var res;
 
 app.post("/login",function(req,response){
-	var user_nama=req.body.user_nama;
-	var password=req.body.password;
-	var res;
+	user_nama=req.body.user_nama;
+	password=req.body.password;
+	console.log("logging in...")
 	checklogin(user_nama,password,function(res){
+		console.log("res",res)
 		if(res.length>0){
+
 			var user_id=res[0].user_id;
 			var user_level=res[0].user_level;
 			apikey.checkapikey("",user_id,function(ret){
@@ -36,6 +41,7 @@ function checklogin(username,password, cb){
 	connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
+		console.log("result",rows,q)
 	  	return cb(rows[0]);
 	});
 };

@@ -11,7 +11,7 @@ app.get("/api/:key/customerprices",function(req,response){
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			customerpriceview(0,1,1,function(res){
+			customerpriceview(0,0,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -26,7 +26,7 @@ app.get("/api/:key/customerprices/:id/",function(req,response){
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			customerpriceview(id,1,1,function(res){
+			customerpriceview(id,0,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -43,7 +43,7 @@ app.get("/api/:key/customerprices/:id/:page",function(req,response){
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			customerpriceview(id,page,1,function(res){
+			customerpriceview(id,0,page,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -101,9 +101,9 @@ function isLogged(key,cb){
 
 }
 
-function customerpriceview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_cp_viewcustomerpricelist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
-	
+function customerpriceview(id,product_id,page,isactive, cb){
+var q=ut.format("CALL `simpadk`.`sp_cp_viewcustomerpricelist`(%d,%d, %d, %d, %d);",id,product_id,page,rowcount,isactive);
+	console.log("query",q)
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null

@@ -8,6 +8,10 @@ var connection = require('../config/db');
 var _crypt = require('../config/crypt');
 var rowcount=30;
 
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 app.get("/api/:key/products",function(req,response){
 	var res;
 	var key=req.params.key;
@@ -71,6 +75,7 @@ app.post("/api/:key/products",function(req,response){
 	isLogged(key,function(log){
 		if(log){
 			var res;
+			//console.log(req.body+" - "+req.body.product_id+" - "+req.body.product_nama);
 			productsave(product_id,merk_id,satuan_id,product_nama,remarks,stock,min_stock,isactive,function(res){
 				response.send(res);
 			});

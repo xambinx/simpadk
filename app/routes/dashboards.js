@@ -29,9 +29,41 @@ app.get("/api/:key/dashboards/graphic/:type",function(req,response){
 	isLogged(key,function(log){
 		if(log){
 			var res;
+			var listDay=new Array(2);
+			var listMonth=new Array(2);
+			
 			var currentTime = new Date();
-			dashboardgraph(type,function(res){
-				response.send(res);
+			var date = new Date(), y = date.getFullYear(), m = date.getMonth();
+			var firstDay = new Date(y, m, 1);
+			var lastDay = new Date(y, m + 1, 0);
+			dashboardgraphic(type,function(res){
+				if(type=="month"){
+					for (i=1;i<=12;i++){
+						var value=0;
+						for (item in res) {
+						    if(item.Qty!=null && item.order_date==i){
+					    		value=item.Qty;	
+					    	}
+						}
+						listDay.push(i,value);
+					}
+					response.send(listDay);
+				}else{
+					for (i=firstDay;i<=lastDay;i++){
+						var value=0;
+						for (item in res) {
+						    if(i==item.order_date){
+						    	if(item.Qty!=null && item.order_date==i){
+						    		value=item.Qty;	
+						    	}
+						    	
+						    }
+						}
+						listMonth.push(i,value);
+					}
+
+					response.send(listMonth);
+				}
 			});
 		}else{
 			response.send("invalid apikey");
@@ -94,7 +126,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function dashboardgraphic(type, cb){
-var q=ut.format("CALL `simpadk`.`sp_ds_getgraphic`('%s');",type);
+var q=ut.format("CALL `simpadk`.`sp_ds_getgraphic`('%s','%s');",type,'2016-09-01');
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

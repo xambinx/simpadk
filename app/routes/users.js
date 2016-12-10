@@ -7,7 +7,7 @@ var apikey = require('../config/apikey');
 var rowcount=30;
 
 app.get("/api/:key/users",function(req,response){
-	var key=req.params.key;
+	var key=req.params.key; 
 	isLogged(key,function(log){
 		if(log){
 			var res;
@@ -63,23 +63,6 @@ app.post("/api/:key/users",function(req,response){
 	});
 	
 });
-app.post("/api/:key/users/changepassword",function(req,response){
-	var user_id=req.body.user_id;
-	var old_password=req.body.old_password;
-	var new_password=req.body.new_password;
-	var key=req.params.key;
-	isLogged(key,function(log){
-		if(log){
-			var res;
-			userchangepassword(user_id,old_password,new_password,function(res){
-				response.send(res);
-			});
-		}else{
-			response.send("invalid apikey");
-		}
-	});
-	
-});
 
 app.delete("/api/:key/users/:id/:permanent",function(req,response){
 	var id=req.params.id;
@@ -122,16 +105,6 @@ connection.query(q, function(err, rows, fields) {
 
 function usersave(user_id,user_name,password,user_level,isactive,cb){
 var q=ut.format("CALL `simpadk`.`sp_us_saveuser`( %d, '%s', '%s', %d, %d);",user_id,user_name,password,user_level,isactive);
-	
-connection.query(q, function(err, rows, fields) {
-		if(err)
-		console.log(err); // null
-	  	return cb(rows[0]);
-	});
-};
-
-function userchangepassword(user_id,old_password,new_password,cb){
-var q=ut.format("CALL `simpadk`.`sp_us_changepassword`( %d, '%s', '%s');",user_id,old_password,new_password);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
