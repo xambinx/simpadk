@@ -1,0 +1,31 @@
+DROP PROCEDURE `sp_cp_viewcustomerpricelist`;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_cp_viewcustomerpricelist`(customer_id int,product_id int,page_no int,row_ct int,isactive bit)
+BEGIN
+declare start_no int;
+declare end_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and customer_id=0
+then
+	select cu.name
+	,cu.address,cu.phone_no,cu.remarks,pr.product_nama,cp.price,pr.remarks,mr.merk_nama,st.satuan_nama
+	 from customer_price cp
+	INNER JOIN customer cu ON cu.customer_id=cp.customer_id
+	INNER JOIN product pr ON pr.product_id=cp.product_id
+	INNER JOIN merk mr ON mr.merk_id=pr.merk_id
+	INNER JOIN satuan st ON st.satuan_id=pr.satuan_id
+	where cp.customer_id=customer_id and cp.product_id=product_id
+	LIMIT start_no,row_ct;
+else
+	select cu.name
+	,cu.address,cu.phone_no,cu.remarks,pr.product_nama,cp.price,pr.remarks,mr.merk_nama,st.satuan_nama
+	 from customer_price cp
+	INNER JOIN customer cu ON cu.customer_id=cp.customer_id
+	INNER JOIN product pr ON pr.product_id=cp.product_id
+	INNER JOIN merk mr ON mr.merk_id=pr.merk_id
+	INNER JOIN satuan st ON st.satuan_id=pr.satuan_id
+	where cp.customer_id=customer_id and cp.product_id=product_id;
+end if;
+END
