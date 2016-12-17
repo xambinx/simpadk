@@ -1,0 +1,948 @@
+CREATE TABLE `supplier` (
+  `supplier_id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) DEFAULT NULL,
+  `address` text,
+  `phone_no` varchar(100) DEFAULT NULL,
+  `remarks` text,
+  `isactive` bit(1) DEFAULT NULL,
+  PRIMARY KEY (`supplier_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE product ADD supplier_price INT(11);
+
+CREATE TABLE `simpadk`.`restock` (
+  `restock_id` INT NOT NULL AUTO_INCREMENT,
+  `restock_date` DATETIME NULL,
+  `user_id` INT(11) NULL,
+  `supplier_id` INT(11) NULL,
+  `total` INT(11) NULL,
+  `discount` INT(11) NULL,
+  `grand_total` INT(11) NULL,
+  `isdebt` BIT(1) NULL,
+  `due_date` DATETIME NULL,
+  PRIMARY KEY (`restock_id`));
+
+
+ALTER TABLE `simpadk`.`order` 
+ADD COLUMN `iscredit` BIT(1) NOT NULL AFTER `remarks`,
+ADD COLUMN `due_date` DATETIME NOT NULL AFTER `iscredit`;
+
+CREATE TABLE `simpadk`.`utang` (
+  `utang_id` INT NOT NULL AUTO_INCREMENT,
+  `utang_date` DATETIME NULL,
+  `supplier_id` INT(11) NULL,
+  `restock_id` INT(11) NULL,
+  `value` INT(11) NULL,
+  `paid` INT(11) NULL,
+  `balance` INT(11) NULL,
+  `due_date` DATETIME NULL,
+  PRIMARY KEY (`utang_id`));
+
+
+
+CREATE TABLE `simpadk`.`piutang` (
+  `piutang_id` INT NOT NULL AUTO_INCREMENT,
+  `piutang_date` DATETIME NULL,
+  `customer_id` INT(11) NULL,
+  `order_id` INT(11) NULL,
+  `value` INT(11) NULL,
+  `paid` INT(11) NULL,
+  `balance` INT(11) NULL,
+  `due_date` DATETIME NULL,
+  PRIMARY KEY (`piutang_id`));
+
+
+CREATE TABLE `simpadk`.`cashflow` (
+  `cashflow_id` INT NOT NULL AUTO_INCREMENT,
+  `cashflow_date` DATETIME NOT NULL,
+  `order_id` INT NULL,
+  `restock_id` INT NULL,
+  `value` INT NOT NULL,
+  `remarks` TEXT NULL,
+  PRIMARY KEY (`cashflow_id`));
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_sp_viewsupplierlist`(supplier_id int, page_no int, row_ct int, isactive bit)
+BEGIN
+
+declare start_no int;
+declare end_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and supplier_id=0
+then
+	SELECT cus.`supplier_id`,
+		cus.`name`,
+		cus.`address`,
+		cus.`phone_no`,
+		cus.`remarks`,
+		cus.`isactive`
+	FROM `supplier` cus
+	WHERE ((cus.isactive=1 AND isactive=1) OR (isactive=0))
+	AND (cus.supplier_id=supplier_id or supplier_id=0 OR supplier_id is null)
+	LIMIT start_no,row_ct;
+else
+	SELECT cus.`supplier_id`,
+		cus.`name`,
+		cus.`address`,
+		cus.`phone_no`,
+		cus.`remarks`,
+		cus.`isactive`
+	FROM `supplier` cus
+	WHERE ((cus.isactive=1 AND isactive=1) OR (isactive=0))
+	AND (cus.supplier_id=supplier_id or supplier_id=0 OR supplier_id is null);
+end if;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_sp_savesupplier`(
+supplier_id INT
+,name NVARCHAR(100)
+,address TEXT
+,phone_no NVARCHAR(100)
+,remarks TEXT
+,isactive BIT
+)
+BEGIN
+
+if supplier_id=0 then
+
+	INSERT INTO `supplier`
+	(
+	`name`,
+	`address`,
+	`phone_no`,
+	`remarks`,
+	`isactive`)
+	VALUES
+	(name
+	,address
+	,phone_no
+	,remarks
+	,1);
+    select 'successfully save record' as result, LAST_INSERT_ID() as insert_id;
+else
+UPDATE `supplier`
+SET
+`name` = name,
+`address` = address,
+`phone_no` = phone_no,
+`remarks` = remarks
+WHERE `supplier_id` = supplier_id;
+
+select 'successfully update record' as result;
+end if;
+
+
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_sp_deletesupplier`(supplier_id int, delete_permanent bit)
+BEGIN
+
+if (delete_permanent=1) then
+
+    delete from supplier where supplier.supplier_id=supplier_id;
+    select 'successfully delete record' as result;
+else
+	update supplier cs set cs.isactive=0 where cs.supplier_id=supplier_id;
+    select 'successfully deactivate record' as result;
+end if;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_od_saveorder`(
+order_id INT,
+order_date DATETIME,
+user_id INT,
+customer_id INT,
+total FLOAT,
+discount FLOAT,
+grand_total FLOAT,
+delivery_date DATETIME,
+isdelivered BIT,
+remarks TEXT,
+due_date DATETIME,
+iscredit BIT
+)
+BEGIN
+
+DECLARE new_id INT DEFAULT 0;
+
+if order_id=0 then
+
+	INSERT INTO `order`
+	(`order_date`,
+	`user_id`,
+	`customer_id`,
+	`total`,
+	`discount`,
+	`grand_total`,
+	`delivery_date`,
+	`isdelivered`,
+	`remarks`,
+    `due_date`,
+    `iscredit`)
+	VALUES
+	(order_date,
+	user_id,
+	customer_id,
+	total,
+	discount,
+	grand_total,
+	delivery_date,
+	isdelivered,
+	remarks,
+    due_date,
+    iscredit);
+
+	SET new_id = LAST_INSERT_ID();
+	IF iscredit=1 THEN
+		INSERT INTO `simpadk`.`piutang`
+		(`piutang_date`,
+		`customer_id`,
+		`order_id`,
+		`value`,
+		`paid`,
+		`balance`,
+		`due_date`)
+		VALUES
+		(order_date,
+		customer_id,
+		new_id,
+		grand_total,
+		0,
+		grand_total,
+		due_date);
+	ELSE
+		INSERT INTO `cashflow`
+		(`cashflow_date`,
+		`order_id`,
+		`restock_id`,
+		`value`,
+		`remarks`)
+		VALUES
+		(order_date,
+		new_id,
+		NULL,
+		grand_total,
+		remarks);
+
+	END IF;
+    select 'successfully save record' as result, new_id  as insert_id;
+else
+
+	UPDATE `order`
+	SET
+	
+	`total` = total,
+	`discount` = discount,
+	`grand_total` = grand_total,
+	`delivery_date` = delivery_date,
+	`isdelivered` = isdelivered,
+	`remarks` = remarks,
+    `due_date`=due_date
+    #iscredit ga boleh diedit, nanti mesti ngehapus 
+	WHERE `order_id` = order_id;
+
+	IF iscredit=1 THEN
+		UPDATE `piutang` as t1,
+		(SELECT paid FROM piutang WHERE `order_id`=order_id) as t2
+		SET
+		t1.`value` = grand_total,
+		t1.`balance` = grand_total-t2.paid,
+		t1.`due_date` = due_date
+		WHERE t1.`order_id` = order_id;
+	else
+		
+        UPDATE `cashflow`
+		SET
+		`value` = grand_total,
+		`remarks` = remarks
+		WHERE `order_id` = order_id;
+
+	END IF;
+
+	select 'successfully update record' as result;
+end if;
+
+
+
+END
+
+CREATE TABLE `restock_item` (
+  `restock_item_id` int(11) NOT NULL AUTO_INCREMENT,
+  `restock_id` int(11) NOT NULL,
+  `product_id` int(11) NOT NULL,
+  `price` float NOT NULL,
+  `quantity` int(11) NOT NULL,
+  `subtotal` float NOT NULL,
+  PRIMARY KEY (`restock_item_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=25 DEFAULT CHARSET=utf8;
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_rs_deleterestock`(restock_id int, delete_permanent bit)
+BEGIN
+
+    delete from `restock` where `restock`.restock_id=restock_id;
+    select 'successfully delete record' as result;
+
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_od_vieworderlist`(IN `order_id` INT, IN `page_no` INT, IN `row_ct` INT, IN `isactive` BIT)
+BEGIN
+
+declare start_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and order_id=0
+then
+SELECT od.`order_id`,
+    od.`order_date`,
+    od.`user_id`,
+    us.user_name,
+    od.`customer_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    od.`total`,
+    od.`discount`,
+    od.`grand_total`,
+    od.`delivery_date`,
+    od.`isdelivered`,
+    od.`remarks`,
+    od.`due_date`,
+    od.`iscredit`
+FROM `order`od
+
+	INNER JOIN user us ON us.user_id=od.user_id
+    LEFT JOIN customer cs ON cs.customer_id=od.customer_id
+
+	WHERE (od.order_id=order_id or order_id=0 OR order_id is null)
+
+	LIMIT start_no,row_ct;
+else
+	SELECT od.`order_id`,
+    od.`order_date`,
+    od.`user_id`,
+    us.user_name,
+    od.`customer_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    od.`total`,
+    od.`discount`,
+    od.`grand_total`,
+    od.`delivery_date`,
+    od.`isdelivered`,
+    od.`remarks`,
+    od.`due_date`,
+    od.`iscredit`
+FROM `order`od
+	INNER JOIN user us ON us.user_id=od.user_id
+    LEFT JOIN customer cs ON cs.customer_id=od.customer_id
+
+	WHERE (od.order_id=order_id or order_id=0 OR order_id is null)
+;
+end if;
+END
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_rs_saverestock`(
+restock_id INT,
+restock_date DATETIME,
+user_id INT,
+supplier_id INT,
+total FLOAT,
+discount FLOAT,
+grand_total FLOAT,
+due_date DATETIME,
+isdebt BIT
+)
+BEGIN
+DECLARE new_id INT DEFAULT 0;
+
+if restock_id=0 then
+
+	INSERT INTO `restock`
+	(`restock_date`,
+	`user_id`,
+	`supplier_id`,
+	`total`,
+	`discount`,
+	`grand_total`,
+    `due_date`,
+    `isdebt`)
+	VALUES
+	(restock_date,
+	user_id,
+	supplier_id,
+	total,
+	discount,
+	grand_total,
+    due_date,
+    isdebt);
+
+	SET new_id = LAST_INSERT_ID();
+	IF isdebt=1 THEN
+		INSERT INTO `simpadk`.`utang`
+		(`utang_date`,
+		`supplier_id`,
+		`restock_id`,
+		`value`,
+		`paid`,
+		`balance`,
+		`due_date`)
+		VALUES
+		(restock_date,
+		supplier_id,
+		new_id,
+		grand_total,
+		0,
+		grand_total,
+		due_date);
+	ELSE
+		INSERT INTO `cashflow`
+		(`cashflow_date`,
+		`restock_id`,
+		`value`,
+		`remarks`)
+		VALUES
+		(restock_date,
+		new_id,
+		grand_total,
+		remarks);
+
+	END IF;
+    select 'successfully save record' as result, new_id  as insert_id;
+else
+
+	UPDATE `restock`
+	SET
+	`restock_date` = restock_date,
+	`user_id` = user_id,
+	`supplier_id` = supplier_id,
+	`total` = total,
+	`discount` = discount,
+	`grand_total` = grand_total,
+    `due_date` = due_date,
+    `isdebt` = isdebt
+	WHERE `restock`.`restock_id` = restock_id;
+
+	IF isdebt=1 THEN
+		UPDATE `utang` as t1,
+		(SELECT paid FROM piutang WHERE `restock_id`=restock_id) as t2
+		SET
+		t1.`value` = grand_total,
+		t1.`balance` = grand_total-t2.paid,
+		t1.`due_date` = due_date
+		WHERE t1.`restock_id` = restock_id;
+	else
+		
+        UPDATE `cashflow`
+		SET
+		`value` = grand_total,
+		`remarks` = remarks
+		WHERE cashflow.`restock_id` = restock_id;
+
+	END IF;
+
+	select 'successfully update record' as result;
+end if;
+
+
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_rs_viewrestocklist`(IN `restock_id` INT, IN `page_no` INT, IN `row_ct` INT, IN `isactive` BIT)
+BEGIN
+declare start_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and restock_id=0
+then
+SELECT rs.`restock_id`,
+    rs.`restock_date`,
+    rs.`user_id`,
+    us.user_name,
+    rs.`supplier_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    rs.`total`,
+    rs.`discount`,
+    rs.`grand_total`,
+    rs.`due_date`,
+    rs.`isdebt`
+FROM `restock`rs
+
+	INNER JOIN user us ON us.user_id=rs.user_id
+    LEFT JOIN supplier cs ON cs.supplier_id=rs.supplier_id
+
+	WHERE (rs.restock_id=restock_id or restock_id=0 OR restock_id is null)
+
+	LIMIT start_no,row_ct;
+else
+	SELECT rs.`restock_id`,
+    rs.`restock_date`,
+    rs.`user_id`,
+    us.user_name,
+    rs.`supplier_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    rs.`total`,
+    rs.`discount`,
+    rs.`grand_total`,
+    rs.`due_date`,
+    rs.`isdebt`
+FROM `restock`rs
+	INNER JOIN user us ON us.user_id=rs.user_id
+    LEFT JOIN supplier cs ON cs.supplier_id=rs.supplier_id
+
+	WHERE (rs.restock_id=restock_id or restock_id=0 OR restock_id is null)
+;
+end if;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ri_deleterestockitem`(restock_item_id int,permanent bit)
+BEGIN
+
+    delete from `restock_item` where `restock_item`.restock_item_id=restock_item_id;
+    select 'successfully delete record' as result;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ri_saverestockitem`(IN `restock_item_id` INT
+, IN `restock_id` INT
+, IN `product_id` INT
+,  IN `price` FLOAT
+, IN `quantity` INT
+, IN `subtotal` FLOAT)
+BEGIN
+
+if restock_item_id=0 then
+
+	INSERT INTO `restock_item`
+(
+`restock_id`,
+`product_id`,
+`price`,
+`quantity`,
+`subtotal`)
+VALUES
+(
+restock_id,
+product_id,
+price,
+quantity,
+subtotal);
+UPDATE product as t1,
+(SELECT * FROM product WHERE product.`product_id`= product_id) as t2 
+SET t1.stock = t2.stock+ quantity
+WHERE t1.product_id = product_id;
+
+    select 'successfully save record' as result, LAST_INSERT_ID() as insert_id;
+else
+UPDATE `restock_item`
+SET
+`restock_id` = restock_id,
+`product_id` = product_id,
+`price` = price,
+`quantity` = quantity,
+`subtotal` = subtotal
+WHERE `restock_item_id` = restock_item_id;
+
+
+
+select 'successfully update record' as result;
+end if;
+
+
+
+END
+
+
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ri_viewrestockitemlist`(IN `restock_id` INT, IN `page_no` INT, IN `row_ct` INT, IN `isactive` BIT)
+BEGIN
+
+declare start_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and restock_id=0
+then
+SELECT
+	oi.`restock_item_id`,
+    oi.`restock_id`,
+    pr.product_nama,
+    oi.`product_id`,
+    st.satuan_nama,
+    oi.`price`,
+    oi.`quantity`,
+    oi.`subtotal`
+FROM `restock_item` oi
+	INNER JOIN product pr ON pr.product_id=oi.product_id
+    INNER JOIN satuan st ON st.satuan_id=pr.satuan_id
+	WHERE  (oi.restock_id=restock_id or restock_id=0 OR restock_id is null)
+	LIMIT start_no,row_ct;
+else
+	SELECT
+	oi.`restock_item_id`,
+    oi.`restock_id`,
+    pr.product_nama,
+    oi.`product_id`,
+    st.satuan_nama,
+    oi.`price`,
+    oi.`quantity`,
+    oi.`subtotal`
+FROM `restock_item` oi
+	INNER JOIN product pr ON pr.product_id=oi.product_id
+    INNER JOIN satuan st ON st.satuan_id=pr.satuan_id
+	WHERE  (oi.restock_id=restock_id or restock_id=0 OR restock_id is null);
+end if;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pi_viewpiutanglist`(IN `piutang_id` INT, IN `page_no` INT, IN `row_ct` INT, IN `isactive` BIT)
+BEGIN
+
+declare start_no int;
+declare end_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and piutang_id=0
+then
+	SELECT pi.`piutang_id`,
+    pi.`piutang_date`,
+    pi.`customer_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    pi.`order_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	FROM `piutang` pi
+    INNER JOIN customer cs ON cs.customer_id=pi.customer_id
+    
+
+	WHERE (pi.piutang_id=piutang_id or piutang_id=0 OR piutang_id is null)
+	LIMIT start_no,row_ct;
+else
+	SELECT pi.`piutang_id`,
+    pi.`piutang_date`,
+    pi.`customer_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    pi.`order_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	FROM `piutang` pi
+    INNER JOIN customer cs ON cs.customer_id=pi.customer_id
+    
+
+	WHERE (pi.piutang_id=piutang_id or piutang_id=0 OR piutang_id is null);
+end if;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pi_deletepiutang`(piutang_id int, delete_permanent bit)
+BEGIN
+    delete from piutang where piutang.piutang_id=piutang_id;
+    select 'successfully delete record' as result;
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ut_saveutang`(IN `utang_id` INT
+, IN `utang_date` DATETIME, IN `supplier_id` INT, IN `restock_id` INT, IN `value` INT, IN `paid` INT, IN `balance` INT, IN `due_date` DATETIME)
+BEGIN
+
+if utang_id=0 then
+
+	INSERT INTO `simpadk`.`utang`
+(`utang_id`,
+`utang_date`,
+`supplier_id`,
+`restock_id`,
+`value`,
+`paid`,
+`balance`,
+`due_date`)
+VALUES
+(utang_id,
+utang_date,
+supplier_id,
+restock_id,
+value,
+paid,
+balance,
+due_date);
+
+
+    select 'successfully save record' as result, LAST_INSERT_ID() as insert_id;
+else
+	UPDATE `simpadk`.`utang`
+SET
+`value` = value,
+`paid` = paid,
+`balance` = balance,
+`due_date` = due_date
+WHERE `utang_id` = utang_id;
+
+
+
+select 'successfully update record' as result;
+end if;
+
+
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ut_deleteutang`(utang_id int, delete_permanent bit)
+BEGIN
+    delete from utang where utang.utang_id=utang_id;
+    select 'successfully delete record' as result;
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ut_viewutanglist`(IN `utang_id` INT, IN `page_no` INT, IN `row_ct` INT, IN `isactive` BIT)
+BEGIN
+
+declare start_no int;
+declare end_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and utang_id=0
+then
+	SELECT pi.`utang_id`,
+    pi.`utang_date`,
+    pi.`supplier_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    pi.`restock_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	FROM `utang` pi
+    INNER JOIN supplier cs ON cs.supplier_id=pi.supplier_id
+    
+
+	WHERE (pi.utang_id=utang_id or utang_id=0 OR utang_id is null)
+	LIMIT start_no,row_ct;
+else
+	SELECT pi.`utang_id`,
+    pi.`utang_date`,
+    pi.`supplier_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    pi.`restock_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	FROM `utang` pi
+    INNER JOIN supplier cs ON cs.supplier_id=pi.supplier_id
+    
+
+	WHERE (pi.utang_id=utang_id or utang_id=0 OR utang_id is null);
+end if;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ut_bayarutang`(IN bayar_date DATETIME,
+IN `restock_id` INT,
+IN `value_bayar` INT,
+IN `remarks` TEXT
+
+)
+BEGIN
+	INSERT INTO `cashflow`
+(`cashflow_date`,
+`restock_id`,
+`value`,
+`remarks`)
+VALUES
+(bayar_date,
+restock_id,
+value_bayar,
+remarks);
+
+UPDATE `utang` as t1,
+		(SELECT paid,`value` FROM utang WHERE utang.`restock_id`=restock_id) as t2
+		SET
+		t1.`paid` = t2.paid+value_bayar,
+		t1.`balance` = t2.`value`-(t2.paid+value_bayar)
+		WHERE t1.`restock_id` = restock_id;
+        
+select 'successfully insert record' as result;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pi_bayarpiutang`(IN bayar_date DATETIME,
+IN `order_id` INT,
+IN `value_bayar` INT,
+IN `remarks` TEXT
+
+)
+BEGIN
+	INSERT INTO `cashflow`
+(`cashflow_date`,
+`order_id`,
+`value`,
+`remarks`)
+VALUES
+(bayar_date,
+order_id,
+value_bayar,
+remarks);
+
+UPDATE `piutang` as t1,
+		(SELECT paid,`value` FROM piutang WHERE `order_id`=order_id) as t2
+		SET
+		t1.`paid` = t2.paid+value_bayar,
+		t1.`balance` = t2.`value`-(t2.paid+value_bayar)
+		WHERE t1.`order_id` = order_id;
+        
+select 'successfully insert record' as result;
+END
+
+ALTER TABLE `simpadk`.`order` 
+CHANGE COLUMN `iscredit` `iscredit` BIT(1) NULL ,
+CHANGE COLUMN `due_date` `due_date` DATETIME NULL ;
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_cf_viewcashflow`(datefrom DATETIME, dateto DATETIME)
+BEGIN
+
+ CREATE TABLE IF NOT EXISTS temp AS 
+(SELECT *, CASE WHEN restock_id is not null then 0-`value` else `value` end as absolutevalue 
+FROM simpadk.cashflow WHERE cashflow_date BETWEEN datefrom AND dateto);
+
+SELECT *,(select sum(absolutevalue) FROM temp) as Balance FROM temp;
+
+DROP TABLE temp;
+
+END
+
+UPDATE `simpadk`.`customer` SET `name`='Tiara Futsal', `address`='Bogor', `isactive`=1 WHERE `customer_id`=1;
+UPDATE `simpadk`.`customer` SET `name`='Debest Hotel', `address`='Bogor', `isactive`=1 WHERE `customer_id`='3';
+UPDATE `simpadk`.`customer` SET `name`='Joeang Hotel', `address`='Bogor', `isactive`=1 WHERE `customer_id`='4';
+UPDATE `simpadk`.`customer` SET `name`='Rizen Kedaton', `address`='Bogor', `isactive`=1 WHERE `customer_id`='5';
+UPDATE `simpadk`.`customer` SET `name`='Wisma Abadi', `address`='Bogor', `isactive`=1 WHERE `customer_id`='6';
+UPDATE `simpadk`.`customer` SET `name`='SMESCO', `address`='Bogor', `isactive`=1 WHERE `customer_id`='7';
+UPDATE `simpadk`.`customer` SET `name`='LPPAI', `address`='Bogor', `isactive`=1 WHERE `customer_id`='8';
+UPDATE `simpadk`.`customer` SET `name`='Q-Mat', `address`='Bogor', `isactive`=1 WHERE `customer_id`='9';
+UPDATE `simpadk`.`customer` SET `name`='Sentul 8 Hotel', `isactive`=1 WHERE `customer_id`='10';
+UPDATE `simpadk`.`customer` SET `name`='Bumi Cikeas', `isactive`=1 WHERE `customer_id`='11';
+UPDATE `simpadk`.`customer` SET `name`='BMKG', `isactive`=1 WHERE `customer_id`='12';
+UPDATE `simpadk`.`customer` SET `name`='Niki Sae', `isactive`=1 WHERE `customer_id`='13';
+UPDATE `simpadk`.`customer` SET `name`='Parahyangan', `isactive`=1 WHERE `customer_id`='14';
+UPDATE `simpadk`.`customer` SET `name`='Santa Monica', `isactive`=1 WHERE `customer_id`='15';
+UPDATE `simpadk`.`customer` SET `name`='Jambuluwuk', `isactive`=1 WHERE `customer_id`='16';
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Camp Hulu Cai', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Bogor Nirwana', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Bintang Jadayat', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Baleza', 'Bogor', '078872783123', ' ', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Lurus', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Aries Biru', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Arwana Safari', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Kartini Futsal', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Garbera', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Village', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Prima Resort', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Prima Resort Safari', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Grand Diara', 'Bogor', '078872783123', ' ', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Ririn + Hayati', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Bogor Guest House', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Ritz Carlton', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Rizen Premiere', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('The Rizen', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Prioritas', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Santiago Futsal', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Bale Arimbi', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Arga Mulya', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Gunung Geulis', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Bonarindo', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) VALUES ('Hotel Bayak', 'Bogor', '078872783123', '', 1);
+
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Engkus', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Baban Supir Tengki', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Emas', 'Bogor', '078872783123', 'Muara Jaya', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Mas Oying', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Didin', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Nusantara Pak Jaelani', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Pak Lilih', 'Lengis', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Bidan Eti', 'Bogor', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Warnet Pasir Muncang', 'Bogor', '078872783123', 'Amanda RS', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Agus Bagol', 'Caringin Lengis', '078872783123', '', 1);
+INSERT INTO `simpadk`.`customer` (`name`, `address`, `phone_no`, `remarks`, `isactive`) 
+VALUES ('Bu Enting Cikerud', 'Bogor', '078872783123', 'Bp. Otang', 1);
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_oi_saveorderitem`(IN `order_item_id` INT, IN `order_id` INT, IN `product_id` INT, IN `customer_price_id` INT, IN `customer_price` FLOAT, IN `quantity` INT, IN `subtotal` FLOAT)
+BEGIN
+if order_item_id=0 then
+
+	INSERT INTO `order_item`
+(
+`order_id`,
+`product_id`,
+`customer_price_id`,
+`customer_price`,
+`quantity`,
+`subtotal`)
+VALUES
+(
+order_id,
+product_id,
+customer_price_id,
+customer_price,
+quantity,
+subtotal);
+
+UPDATE product as t1,
+(SELECT * FROM product WHERE product.`product_id`= product_id) as t2 
+SET t1.stock = t2.stock- quantity
+WHERE t1.product_id = product_id;
+
+    select 'successfully save record' as result, LAST_INSERT_ID() as insert_id;
+else
+UPDATE `order_item`
+SET
+`order_id` = order_id,
+`product_id` = product_id,
+`customer_price_id` = customer_price_id,
+`customer_price` = customer_price,
+`quantity` = quantity,
+`subtotal` = subtotal
+WHERE order_item.`order_item_id` = order_item_id;
+
+
+
+select 'successfully update record' as result;
+end if;
+
+
+
+END

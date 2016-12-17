@@ -1,0 +1,207 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ut_reportutang`(date_from DATETIME,date_to DATETIME,supplier_id INT)
+BEGIN
+SET date_to = CONCAT(DATE_FORMAT(date_to, '%Y-%m-%d'), ' 23:59:59');
+CREATE TABLE IF NOT EXISTS temp AS 
+(SELECT pi.`utang_id`,
+    pi.`utang_date`,
+    pi.`supplier_id`,
+    cs.name,
+    pi.`restock_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	
+    FROM `utang` pi
+    INNER JOIN supplier cs ON cs.supplier_id=pi.supplier_id
+    WHERE (pi.`utang_date`BETWEEN date_from AND date_to)
+    AND (pi.`supplier_id` =supplier_id OR supplier_id=0 OR supplier_id IS NULL)
+);
+SELECT * FROM temp as main,
+(SELECT  SUM(`value`) as totalvalue, SUM(paid) as totalpaid , SUM(paid) as totalbalance FROM temp) as total;
+DROP TABLE temp;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pi_reportpiutang`(date_from DATETIME,date_to DATETIME,customer_id INT)
+BEGIN
+
+SET date_to = CONCAT(DATE_FORMAT(date_to, '%Y-%m-%d'), ' 23:59:59');
+CREATE TABLE IF NOT EXISTS temp AS 
+(SELECT pi.`piutang_id`,
+    pi.`piutang_date`,
+    pi.`customer_id`,
+    cs.name,
+    pi.`order_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	
+    FROM `piutang` pi
+    INNER JOIN customer cs ON cs.customer_id=pi.customer_id
+    WHERE (pi.`piutang_date`BETWEEN date_from AND date_to)
+    AND (pi.`customer_id` =customer_id OR customer_id=0 OR customer_id IS NULL)
+);
+SELECT * FROM temp as main,
+(SELECT  SUM(`value`) as totalvalue, SUM(paid) as totalpaid , SUM(paid) as totalbalance FROM temp) as total;
+DROP TABLE temp;
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pr_reportstock`()
+BEGIN
+	SELECT NOW() as pertoday ,merk_nama,product_nama,stock FROM product a
+	INNER JOIN merk b ON a.merk_id=b.merk_id
+	ORDER BY merk_nama,product_nama;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_od_reportorder`(date_from DATETIME, date_to DATETIME, customer_id INT)
+BEGIN
+
+SET date_to = CONCAT(DATE_FORMAT(date_to, '%Y-%m-%d'), ' 23:59:59');
+SELECT order_date
+,o.order_id
+,cs.name
+,mr.merk_nama
+,pr.product_nama
+,oi.customer_price
+,oi.quantity
+,oi.subtotal
+,o.grand_total
+,CASE WHEN o.iscredit=1 THEN 'KREDIT' ELSE 'TUNAI' END as payment
+,due_date 
+FROM `order` as o
+INNER JOIN order_item as oi ON o.order_id=oi.order_id
+INNER JOIN `user` as us ON us.user_id=o.user_id
+LEFT JOIN `customer` as cs ON cs.customer_id=o.customer_id
+INNER JOIN `product` as pr ON pr.product_id=oi.product_id
+INNER JOIN `merk` as mr ON mr.merk_id=pr.merk_id
+INNER JOIN `satuan` as st ON st.satuan_id=pr.satuan_id
+WHERE o.order_date BETWEEN date_from AND date_to
+AND (customer_id=o.customer_id OR customer_id=0 OR customer_id IS NULL);
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_rs_reportrestock`(date_from DATETIME, date_to DATETIME, supplier_id INT)
+BEGIN
+
+SET date_to = CONCAT(DATE_FORMAT(date_to, '%Y-%m-%d'), ' 23:59:59');
+SELECT restock_date
+,o.restock_id
+,cs.name
+,mr.merk_nama
+,pr.product_nama
+,pr.supplier_price
+,oi.quantity
+,oi.subtotal
+,o.grand_total
+,CASE WHEN o.isdebt=1 THEN 'KREDIT' ELSE 'TUNAI' END as payment
+,due_date 
+FROM `restock` as o
+INNER JOIN restock_item as oi ON o.restock_id=oi.restock_id
+INNER JOIN `user` as us ON us.user_id=o.user_id
+LEFT JOIN `supplier` as cs ON cs.supplier_id=o.supplier_id
+INNER JOIN `product` as pr ON pr.product_id=oi.product_id
+INNER JOIN `merk` as mr ON mr.merk_id=pr.merk_id
+INNER JOIN `satuan` as st ON st.satuan_id=pr.satuan_id
+WHERE o.restock_date BETWEEN date_from AND date_to
+AND (supplier_id=o.supplier_id OR supplier_id=0 OR supplier_id IS NULL);
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_fk_reportfaktursupplier`(restock_id INT)
+BEGIN
+SELECT restock_date
+,o.restock_id
+,cs.name
+,cs.address
+,cs.phone_no
+,mr.merk_nama
+,pr.product_nama
+,pr.supplier_price
+,oi.quantity
+,oi.subtotal
+,o.grand_total
+FROM `restock` as o
+INNER JOIN restock_item as oi ON o.restock_id=oi.restock_id
+INNER JOIN `user` as us ON us.user_id=o.user_id
+LEFT JOIN `supplier` as cs ON cs.supplier_id=o.supplier_id
+INNER JOIN `product` as pr ON pr.product_id=oi.product_id
+INNER JOIN `merk` as mr ON mr.merk_id=pr.merk_id
+INNER JOIN `satuan` as st ON st.satuan_id=pr.satuan_id
+WHERE o.restock_id=restock_id;
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_fk_reportfakturcustomer`(order_id INT)
+BEGIN
+SELECT order_date
+,o.order_id
+,cs.name
+,cs.address
+,cs.phone_no
+,mr.merk_nama
+,pr.product_nama
+,oi.customer_price
+,oi.quantity
+,oi.subtotal
+,o.grand_total
+,us.user_name
+FROM `order` as o
+INNER JOIN order_item as oi ON o.order_id=oi.order_id
+INNER JOIN `user` as us ON us.user_id=o.user_id
+LEFT JOIN `customer` as cs ON cs.customer_id=o.customer_id
+INNER JOIN `product` as pr ON pr.product_id=oi.product_id
+INNER JOIN `merk` as mr ON mr.merk_id=pr.merk_id
+INNER JOIN `satuan` as st ON st.satuan_id=pr.satuan_id
+WHERE o.order_id=order_id;
+
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pr_saveproduct`(IN `product_id` INT, IN `merk_id` INT, IN `satuan_id` INT, IN `product_nama` TEXT, IN `remarks` TEXT, IN `isactive` BIT, IN `stock` INT, IN `min_stock` INT,IN `supplier_price` INT)
+BEGIN
+if product_id=0 then
+
+	INSERT INTO `product`
+	(`merk_id`,
+	`satuan_id`,
+	`product_nama`,
+	`remarks`,
+    `stock`,
+    `min_stock`,
+    `supplier_price`,
+	`default_price`,
+	`isactive`)
+	VALUES
+	(merk_id,
+	satuan_id,
+	product_nama,
+	remarks,
+	stock,
+    min_stock,
+    supplier_price,
+    default_price,
+    isactive);
+
+    select 'successfully save record' as result, LAST_INSERT_ID() as insert_id;
+else
+	UPDATE`product`
+	SET
+	`merk_id` = merk_id,
+	`satuan_id` = satuan_id,
+	`product_nama` = product_nama,
+	`remarks` = remarks,
+	`stock`=stock,
+    `min_stock`=min_stock,
+    `supplier_price`=supplier_price,
+    `default_price`=default_price,
+	`isactive` = isactive
+	WHERE `product_id` = product_id;
+
+
+select 'successfully update record' as result;
+end if;
+
+
+
+END
