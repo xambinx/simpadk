@@ -6,12 +6,12 @@ var connection = require('../config/db');
 var apikey = require('../config/apikey');
 var rowcount=30;
 
-app.get("/api/:key/orders",function(req,response){
+app.get("/api/:key/suppliers",function(req,response){
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			orderview(0,1,1,function(res){
+			supplierview(0,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -20,13 +20,13 @@ app.get("/api/:key/orders",function(req,response){
 	});
 	
 });
-app.get("/api/:key/orders/:id/",function(req,response){
+app.get("/api/:key/suppliers/:id/",function(req,response){
 	var id=req.params.id;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			orderview(id,1,1,function(res){
+			supplierview(id,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -36,14 +36,14 @@ app.get("/api/:key/orders/:id/",function(req,response){
 	});
 	
 });
-app.get("/api/:key/orders/:id/:page",function(req,response){
+app.get("/api/:key/suppliers/:id/:page",function(req,response){
 	var id=req.params.id;
 	var page=req.params.page;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			orderview(id,page,1,function(res){
+			supplierview(id,page,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -53,26 +53,18 @@ app.get("/api/:key/orders/:id/:page",function(req,response){
 	
 });
 
-app.post("/api/:key/orders",function(req,response){
-	
-	var order_id=req.body.order_id;
-	var order_date=req.body.order_date;
-	var user_id=req.body.user_id;
-	var customer_id=req.body.customer_id;
-	var total=req.body.total;
-	var discount=req.body.discount;
-	var grand_total=req.body.grand_total;
-	var delivery_date=req.body.delivery_date;
-	var isdelivered=req.body.isdelivered;
+app.post("/api/:key/suppliers",function(req,response){
+	var supplier_id=req.body.supplier_id;
+	var name=req.body.name;
+	var phone_no=req.body.phone_no;
+	var address=req.body.address;
 	var remarks=req.body.remarks;
-	var due_date=req.body.due_date;
-	var iscredit=req.body.iscredit;
-	
+	var isactive=req.body.isactive;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			ordersave(order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks,due_date,iscredit,function(res){
+			suppliersave(supplier_id,name,phone_no,address,remarks,isactive,function(res){
 				response.send(res);
 			});
 		}else{
@@ -82,14 +74,14 @@ app.post("/api/:key/orders",function(req,response){
 	
 });
 
-app.delete("/api/:key/orders/:id/:permanent",function(req,response){
+app.delete("/api/:key/suppliers/:id/:permanent",function(req,response){
 	var id=req.params.id;
 	var permanent=req.params.permanent;
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			orderdelete(id,permanent,function(res){
+			supplierdelete(id,permanent,function(res){
 				response.send(res);
 			});
 		}else{
@@ -111,8 +103,8 @@ function isLogged(key,cb){
 
 }
 
-function orderview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_od_vieworderlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+function supplierview(id,page,isactive, cb){
+var q=ut.format("CALL `simpadk`.`sp_sp_viewsupplierlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -121,8 +113,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function ordersave(order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks,due_date,iscredit,cb){
-var q=ut.format("CALL `simpadk`.`sp_od_saveorder`( %d, '%s', %d, %d, %d, %d, %d, '%s', %d,'%s','%s',%d);",order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks,due_date,iscredit);
+function suppliersave(supplier_id,name,address,phone_no,remarks,isactive,cb){
+var q=ut.format("CALL `simpadk`.`sp_sp_savesupplier`( %d, '%s', '%s', '%s', '%s', %d);",supplier_id,name,address,phone_no,remarks,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -131,8 +123,8 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function orderdelete(merk_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_od_deleteorder`(%d, %d);",merk_id,delete_permanent);
+function supplierdelete(merk_id,delete_permanent,cb){
+var q=ut.format("CALL `simpadk`.`sp_sp_deletesupplier`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
