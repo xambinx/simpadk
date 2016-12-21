@@ -27,6 +27,23 @@ app.get("/api/:key/products",function(req,response){
 
 	});
 });
+app.get("/api/:key/products/customer/:customerid/:productid",function(req,response){
+	var res;
+	var key=req.params.key;
+	var customerid=req.params.customerid;
+	var productid=req.params.productid;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			productviewcustomer(productid,customerid,function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
+
+	});
+});
 app.get("/api/:key/products/:id/",function(req,response){
 	var id=req.params.id;
 	var res;
@@ -120,6 +137,16 @@ function isLogged(key,cb){
 }
 function productview(id,page,isactive, cb){
 var q=ut.format("CALL `simpadk`.`sp_pr_viewproductlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+	
+connection.query(q, function(err, rows, fields) {
+		if(err)
+		console.log(err); // null
+	  	return cb(rows[0]);
+	});
+};
+
+function productviewcustomer(productid,customerid, cb){
+var q=ut.format("CALL `simpadk`.`sp_pr_viewproductlistcustomer`(%d, %d);",productid,customerid);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
