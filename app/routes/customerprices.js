@@ -20,13 +20,15 @@ app.get("/api/:key/customerprices",function(req,response){
 	});
 	
 });
-app.get("/api/:key/customerprices/:id/",function(req,response){
+app.get("/api/:key/customerprices/:id/:productid/",function(req,response){
 	var id=req.params.id;
 	var key=req.params.key;
+	var product_id=req.params.productid;
+	
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			customerpriceview(id,0,1,1,function(res){
+			customerpriceview(id,product_id,1,1,function(res){
 				response.send(res);
 			});
 		}else{
@@ -36,14 +38,16 @@ app.get("/api/:key/customerprices/:id/",function(req,response){
 	});
 	
 });
-app.get("/api/:key/customerprices/:id/:page",function(req,response){
+app.get("/api/:key/customerprices/:id/:productid/:page",function(req,response){
 	var id=req.params.id;
 	var page=req.params.page;
 	var key=req.params.key;
+	var product_id=req.params.productid;
+
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			customerpriceview(id,0,page,1,function(res){
+			customerpriceview(id,product_id,page,1,function(res){
 				response.send(res);
 			});
 		}else{
