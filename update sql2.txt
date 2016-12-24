@@ -1,0 +1,152 @@
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pi_bayarpiutang`(IN bayar_date DATETIME,
+IN `order_id` INT,
+IN `value_bayar` INT,
+IN `remarks` TEXT
+
+)
+BEGIN
+	INSERT INTO `cashflow`
+(`cashflow_date`,
+`order_id`,
+`value`,
+`remarks`)
+VALUES
+(bayar_date,
+order_id,
+value_bayar,
+remarks);
+
+UPDATE `piutang` as t1,
+		(SELECT paid,`value` FROM piutang WHERE `order_id`=order_id) as t2
+		SET
+		t1.`paid` = t2.paid+value_bayar,
+		t1.`balance` = t2.`value`-t2.paid-value_bayar
+		WHERE t1.`order_id` = order_id;
+        
+select 'successfully insert record' as result;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ut_bayarutang`(IN bayar_date DATETIME,
+IN `restock_id` INT,
+IN `value_bayar` INT,
+IN `remarks` TEXT
+
+)
+BEGIN
+	INSERT INTO `cashflow`
+(`cashflow_date`,
+`restock_id`,
+`value`,
+`remarks`)
+VALUES
+(bayar_date,
+restock_id,
+value_bayar,
+remarks);
+
+UPDATE `utang` as t1,
+		(SELECT paid,`value` FROM utang WHERE utang.`restock_id`=restock_id) as t2
+		SET
+		t1.`paid` = t2.paid+value_bayar,
+		t1.`balance` = t2.`value`-t2.paid-value_bayar
+		WHERE t1.`restock_id` = restock_id;
+        
+select 'successfully insert record' as result;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_pi_viewpiutanglist`(IN `piutang_id` INT, IN `page_no` INT, IN `row_ct` INT)
+BEGIN
+declare start_no int;
+declare end_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and piutang_id=0
+then
+	SELECT pi.`piutang_id`,
+    pi.`piutang_date`,
+    pi.`customer_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    pi.`order_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	FROM `piutang` pi
+    INNER JOIN customer cs ON cs.customer_id=pi.customer_id
+   
+
+	WHERE (pi.piutang_id=piutang_id or piutang_id=0 OR piutang_id is null)
+    AND pi.`balance`>0
+	LIMIT start_no,row_ct;
+else
+	SELECT pi.`piutang_id`,
+    pi.`piutang_date`,
+    pi.`customer_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    pi.`order_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	FROM `piutang` pi
+    INNER JOIN customer cs ON cs.customer_id=pi.customer_id
+    
+	WHERE (pi.piutang_id=piutang_id or piutang_id=0 OR piutang_id is null)
+    AND pi.`balance`>0;
+end if;
+END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ut_viewutanglist`(IN `utang_id` INT, IN `page_no` INT, IN `row_ct` INT)
+BEGIN
+declare start_no int;
+declare end_no int;
+
+if(page_no<1) then set page_no=1;end if;
+set start_no = ((page_no-1)*row_ct);
+
+if row_ct>0 and utang_id=0
+then
+	SELECT pi.`utang_id`,
+    pi.`utang_date`,
+    pi.`supplier_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    pi.`restock_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	FROM `utang` pi
+    INNER JOIN supplier cs ON cs.supplier_id=pi.supplier_id
+    
+
+	WHERE (pi.utang_id=utang_id or utang_id=0 OR utang_id is null)
+    AND pi.`balance`>0
+	LIMIT start_no,row_ct;
+else
+	SELECT pi.`utang_id`,
+    pi.`utang_date`,
+    pi.`supplier_id`,
+    cs.name,
+    cs.address,
+    cs.phone_no,
+    pi.`restock_id`,
+    pi.`value`,
+    pi.`paid`,
+	  pi.`balance`,
+	  pi.`due_date`
+	FROM `utang` pi
+    INNER JOIN supplier cs ON cs.supplier_id=pi.supplier_id
+    
+
+	WHERE (pi.utang_id=utang_id or utang_id=0 OR utang_id is null)
+    AND pi.`balance`>0;
+end if;
+END

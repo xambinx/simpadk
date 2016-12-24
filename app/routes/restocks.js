@@ -123,7 +123,7 @@ connection.query(q, function(err, rows, fields) {
 
 function restocksave(restock_id,restock_date,user_id,supplier_id,total,discount,grand_total,due_date,isdebt,cb){
 var q=ut.format("CALL `simpadk`.`sp_rs_saverestock`( %d, '%s', %d, %d, %d, %d, %d,'%s',%d);",restock_id,restock_date,user_id,supplier_id,total,discount,grand_total,due_date,isdebt);
-	
+	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
