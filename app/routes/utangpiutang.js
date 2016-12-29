@@ -36,9 +36,10 @@ app.get("/api/:key/piutang/",function(req,response){
 	});
 	
 });
-app.get("/api/:key/utang/:id/",function(req,response){
+app.get("/api/:key/utang/:id/:page",function(req,response){
 	var key=req.params.key;
     var id=req.params.id;
+    var page=req.params.page;
     
 	isLogged(key,function(log){
 		if(log){
@@ -52,7 +53,7 @@ app.get("/api/:key/utang/:id/",function(req,response){
 	});
 	
 });
-app.get("/api/:key/utang/:id/:page",function(req,response){
+app.get("/api/:key/utang/:id/",function(req,response){
 	var key=req.params.key;
     var id=req.params.id;
     
@@ -68,8 +69,10 @@ app.get("/api/:key/utang/:id/:page",function(req,response){
 	});
 	
 });
-app.get("/api/:key/piutang/:id",function(req,response){
+app.get("/api/:key/piutang/:id/:page",function(req,response){
 	var key=req.params.key;
+    var id=req.params.id;
+    var page=req.params.page;
 	isLogged(key,function(log){
 		if(log){
 			var res;
@@ -82,7 +85,7 @@ app.get("/api/:key/piutang/:id",function(req,response){
 	});
 	
 });
-app.get("/api/:key/piutang/:id/:page",function(req,response){
+app.get("/api/:key/piutang/:id",function(req,response){
 	var key=req.params.key;
     var id=req.params.id;
     
