@@ -1,0 +1,65 @@
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ds_getsalescount`(
+_pointdate DATETIME 
+)
+BEGIN
+if _pointdate is null then
+	set _pointdate=CURDATE();
+end if;
+CREATE TABLE IF NOT EXISTS tempSales(order_date DATETIME,quantity INT);
+
+DELETE FROM tempSales;
+
+INSERT INTO tempSales 
+SELECT oo.order_date,oi.quantity  FROM `order` oo
+INNER JOIN order_item oi ON oo.order_id = oi.order_id;
+
+SELECT
+(SELECT IFNULL(SUM(quantity),0) as qty FROM tempSales WHERE order_date between CONCAT_WS(' ', _pointdate, '00:00:00') and CONCAT_WS(' ', _pointdate, '23:59:59')) as DailySales,
+(SELECT IFNULL(SUM(quantity),0) as qty FROM tempSales WHERE order_date between DATE_SUB(CONCAT_WS(' ', _pointdate, '00:00:00'), INTERVAL 7 DAY) and CONCAT_WS(' ', _pointdate, '23:59:59')) as WeeklySales,
+(SELECT IFNULL(SUM(quantity),0) as qty FROM tempSales WHERE order_date between DATE_SUB(CONCAT_WS(' ', _pointdate, '00:00:00'), INTERVAL 1 MONTH) and CONCAT_WS(' ', _pointdate, '23:59:59')) as MonthlySales;
+
+DELETE FROM tempSales;
+
+
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ds_getpendingdeliveredorder`()
+BEGIN
+SELECT oo.order_id,oo.order_date,cs.name,cs.phone_no,grand_total,delivery_date,us.user_name,oo.remarks FROM `order` oo 
+INNER JOIN customer cs ON oo.customer_id=cs.customer_id
+INNER JOIN `user` us ON oo.user_id=us.user_id
+WHERE isdelivered=0;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ds_getminstock`()
+BEGIN
+SELECT product_nama,mr.merk_nama,st.satuan_nama,stock,min_stock,pr.remarks FROM product pr
+INNER JOIN merk mr ON pr.merk_id=mr.merk_id
+INNER JOIN satuan st ON pr.satuan_id=st.satuan_id
+
+ WHERE stock<=min_stock;
+END$$
+DELIMITER ;
+
+DELIMITER $$
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ds_getgraphic`(_type nvarchar(10),pointdate datetime)
+BEGIN
+
+if _type='month' then
+SELECT DATE_FORMAT(oo.order_date,'%d') as order_date,SUM(oi.quantity) as Qty  FROM `order` oo
+INNER JOIN order_item oi ON oo.order_id = oi.order_id
+WHERE MONTH(oo.order_date)=MONTH(pointdate) AND YEAR(oo.order_date)=YEAR(pointdate)
+GROUP BY CONCAT_WS(' ', DATE(oo.order_date), '00:00:00');
+else 
+SELECT MONTHNAME(oo.order_date) order_date,SUM(oi.quantity) as Qty  FROM `order` oo
+INNER JOIN order_item oi ON oo.order_id = oi.order_id
+WHERE YEAR(oo.order_date)=YEAR(pointdate)
+GROUP BY MONTH(oo.order_date);
+end if;
+END$$
+DELIMITER ;
