@@ -51,3 +51,19 @@ INNER JOIN satuan st ON pr.satuan_id=st.satuan_id
 
  WHERE stock<=min_stock;
 END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ds_getgraphic`(_type nvarchar(10),pointdate datetime)
+BEGIN
+
+if _type='month' then
+SELECT DATE_FORMAT(oo.order_date,'%d') as order_date,SUM(oi.quantity) as Qty  FROM `order` oo
+INNER JOIN order_item oi ON oo.order_id = oi.order_id
+WHERE MONTH(oo.order_date)=MONTH(pointdate) AND YEAR(oo.order_date)=YEAR(pointdate)
+GROUP BY CONCAT_WS(' ', DATE(oo.order_date), '00:00:00');
+else 
+SELECT MONTHNAME(oo.order_date) order_date,SUM(oi.quantity) as Qty  FROM `order` oo
+INNER JOIN order_item oi ON oo.order_id = oi.order_id
+WHERE YEAR(oo.order_date)=YEAR(pointdate)
+GROUP BY MONTH(oo.order_date);
+end if;
+END 
