@@ -14,3 +14,28 @@ WHERE MONTH(oo.order_date)=MONTH(pointdate) AND YEAR(oo.order_date)=YEAR(pointda
 GROUP BY CONCAT_WS(' ', DATE(oo.order_date), '00:00:00');
 end if;
 END
+
+CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_ds_getsalescount`(
+_pointdate DATETIME 
+)
+BEGIN
+if _pointdate is null then
+	set _pointdate=CURDATE();
+end if;
+CREATE TABLE IF NOT EXISTS tempSales(order_date DATETIME,quantity INT);
+
+DELETE FROM tempSales;
+
+INSERT INTO tempSales 
+SELECT oo.order_date,oi.quantity  FROM `order` oo
+INNER JOIN order_item oi ON oo.order_id = oi.order_id;
+
+SELECT
+(SELECT IFNULL(SUM(quantity),0) as qty FROM tempSales WHERE order_date between CONCAT_WS(' ', _pointdate, '00:00:00') and CONCAT_WS(' ', _pointdate, '23:59:59')) as DailySales,
+(SELECT IFNULL(SUM(quantity),0) as qty FROM tempSales WHERE WEEK(order_date)= WEEK(_pointdate) AND YEAR(order_date) = YEAR(_pointdate)) as WeeklySales,
+(SELECT IFNULL(SUM(quantity),0) as qty FROM tempSales WHERE MONTH(order_date)= MONTH(_pointdate) AND YEAR(order_date) = YEAR(_pointdate)) as MonthlySales;
+
+DELETE FROM tempSales;
+
+
+END
