@@ -131,7 +131,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function dashboardgraphic(type,datepointer, cb){
-var q=ut.format("CALL `simpadk`.`sp_ds_getgraphic`('%s','%s');",type,'2016-12-01');
+var q=ut.format("CALL `simpadk`.`sp_ds_getgraphic`('%s','%s');",type,datepointer);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
