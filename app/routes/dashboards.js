@@ -29,37 +29,42 @@ app.get("/api/:key/dashboards/graphic/:type",function(req,response){
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			var listDay=new Array(2);
-			var listMonth=new Array(2);
+			var listDay=[];
+			var listMonth=[];
 			
 			var currentTime = new Date();
 			var date = new Date(), y = date.getFullYear(), m = date.getMonth();
-			var firstDay = new Date(y, m, 1);
-			var lastDay = new Date(y, m + 1, 0);
-			dashboardgraphic(type,function(res){
+			var firstDay = new Date(y, m, 1).getDate();
+			var lastDay = new Date(y, m + 1, -1).getDate();
+			dashboardgraphic(type,date,function(res){
 				if(type=="month"){
-					for (i=1;i<=12;i++){
+					for (i=0;i<=11;i++){
+						var monthname=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
 						var value=0;
-						for (item in res) {
-						    if(item.Qty!=null && item.order_date==i){
+						
+						for (x=0;x<res.length;x++) {
+							var item=res[x];
+							if(item.Qty!=null && item.order_date==i+1){
 					    		value=item.Qty;	
 					    	}
 						}
-						listDay.push(i,value);
+						var name=monthname[i];
+						listDay.push({"label":name,"value":value});
 					}
 					response.send(listDay);
 				}else{
 					for (i=firstDay;i<=lastDay;i++){
 						var value=0;
-						for (item in res) {
-						    if(i==item.order_date){
+						for (x=0;x<res.length;x++) {
+						    var item=res[x]
+							if(i==item.order_date){
 						    	if(item.Qty!=null && item.order_date==i){
 						    		value=item.Qty;	
 						    	}
 						    	
 						    }
 						}
-						listMonth.push(i,value);
+						listMonth.push({"label":i,"value":value});
 					}
 
 					response.send(listMonth);
@@ -117,7 +122,7 @@ function isLogged(key,cb){
 
 function dashboardsales(datepointer, cb){
 var q=ut.format("CALL `simpadk`.`sp_ds_getsalescount`('%s');",datepointer);
-	
+	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
@@ -125,12 +130,13 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 
-function dashboardgraphic(type, cb){
-var q=ut.format("CALL `simpadk`.`sp_ds_getgraphic`('%s','%s');",type,'2016-09-01');
-	
+function dashboardgraphic(type,datepointer, cb){
+var q=ut.format("CALL `simpadk`.`sp_ds_getgraphic`('%s','%s');",type,'2016-12-01');
+	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
+		console.log(rows[0]);
 	  	return cb(rows[0]);
 	});
 };
@@ -138,7 +144,7 @@ connection.query(q, function(err, rows, fields) {
 
 function dashboarddelivery( cb){
 var q=ut.format("CALL `simpadk`.`sp_ds_getpendingdeliveredorder`;");
-	
+	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
@@ -148,7 +154,7 @@ connection.query(q, function(err, rows, fields) {
 
 function dashboardstock( cb){
 var q=ut.format("CALL `simpadk`.`sp_ds_getminstock`;");
-	
+	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
