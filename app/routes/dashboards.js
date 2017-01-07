@@ -36,7 +36,7 @@ app.get("/api/:key/dashboards/graphic/:type",function(req,response){
 			var date = new Date(), y = date.getFullYear(), m = date.getMonth();
 			var firstDay = new Date(y, m, 1).getDate();
 			var lastDay = new Date(y, m + 1, -1).getDate();
-			dashboardgraphic(type,date,function(res){
+			dashboardgraphic(type,currentTime.toISOString().substring(0, 10),function(res){
 				if(type=="month"){
 					for (i=0;i<=11;i++){
 						var monthname=["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
