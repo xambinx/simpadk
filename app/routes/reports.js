@@ -44,6 +44,7 @@ app.post("/api/:key/reports/order/",function(req,response){
 app.post("/api/:key/reports/utang/",function(req,response){
 	var supplier_id=req.body.supplier_id;
 	var date_from=req.body.date_from;
+	console.log(date_from);
 	var date_to=req.body.date_to;
 	var key=req.params.key;
 	isLogged(key,function(log){
@@ -84,6 +85,22 @@ app.post("/api/:key/reports/stock/",function(req,response){
 		if(log){
 			var res;
 			reportstock(function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
+	});
+	
+});
+app.post("/api/:key/reports/cashflow/",function(req,response){
+	var date_from=req.body.date_from;
+	var date_to=req.body.date_to;
+	var key=req.params.key;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			reportcashflow(date_from,date_to,function(res){
 				response.send(res);
 			});
 		}else{
@@ -148,6 +165,15 @@ connection.query(q, function(err, rows, fields) {
 
 function reportstock(cb){
 var q=ut.format("CALL `simpadk`.`sp_pr_reportstock`();");
+	console.log(q);
+connection.query(q, function(err, rows, fields) {
+		if(err)
+		console.log(err); // null
+	  	return cb(rows[0]);
+	});
+};
+function reportcashflow(date_from,date_to,cb){
+var q=ut.format("CALL `simpadk`.`sp_cf_viewcashflow`( '%s', '%s');",date_from,date_to);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
