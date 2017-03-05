@@ -106,7 +106,7 @@ function isLogged(key,cb){
 }
 
 function customerpriceview(id,product_id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_cp_viewcustomerpricelist`(%d,%d, %d, %d, %d);",id,product_id,page,rowcount,isactive);
+var q=ut.format("CALL `sp_cp_viewcustomerpricelist`(%d,%d, %d, %d, %d);",id,product_id,page,rowcount,isactive);
 	console.log("query",q)
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -116,7 +116,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function customerpricesave(customerprice_id, customer_id,product_id,price,cb){
-var q=ut.format("CALL `simpadk`.`sp_cp_savecustomerprice`( %d, %d, %d, %d);",customerprice_id, customer_id,product_id,price);
+var q=ut.format("CALL `sp_cp_savecustomerprice`( %d, %d, %d, %d);",customerprice_id, customer_id,product_id,price);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -126,7 +126,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function customerpricedelete(merk_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_cp_deletecustomerprice`(%d, %d);",merk_id,delete_permanent);
+var q=ut.format("CALL `sp_cp_deletecustomerprice`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

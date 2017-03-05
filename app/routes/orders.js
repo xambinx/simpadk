@@ -112,8 +112,8 @@ function isLogged(key,cb){
 }
 
 function orderview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_od_vieworderlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
-	
+var q=ut.format("CALL `sp_od_vieworderlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+console.log(q);	
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
@@ -122,8 +122,8 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function ordersave(order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks,due_date,iscredit,cb){
-var q=ut.format("CALL `simpadk`.`sp_od_saveorder`( %d, '%s', %d, %d, %d, %d, %d, '%s', %d,'%s','%s',%d);",order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks,due_date,iscredit);
-	
+var q=ut.format("CALL `sp_od_saveorder`( %d, '%s', %d, %d, %d, %d, %d, '%s', %d,'%s','%s',%d);",order_id,order_date,user_id,customer_id,total,discount,grand_total,delivery_date,isdelivered,remarks,due_date,iscredit);
+console.log(q);	
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
@@ -132,8 +132,8 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function orderdelete(merk_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_od_deleteorder`(%d, %d);",merk_id,delete_permanent);
-	
+var q=ut.format("CALL `sp_od_deleteorder`(%d, %d);",merk_id,delete_permanent);
+	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null

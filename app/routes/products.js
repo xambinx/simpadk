@@ -136,7 +136,7 @@ function isLogged(key,cb){
 
 }
 function productview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_pr_viewproductlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+var q=ut.format("CALL `sp_pr_viewproductlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -146,7 +146,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function productviewcustomer(productid,customerid, cb){
-var q=ut.format("CALL `simpadk`.`sp_pr_viewproductlistcustomer`(%d, %d);",productid,customerid);
+var q=ut.format("CALL `sp_pr_viewproductlistcustomer`(%d, %d);",productid,customerid);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -156,7 +156,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function productsave(product_id,merk_id,satuan_id,product_nama,remarks,stock,min_stock,isactive,supplier_price,default_price,cb){
-var q=ut.format("CALL `simpadk`.`sp_pr_saveproduct`(%d,%d, %d, '%s', '%s', %d, %d, %d, %d,%d);",product_id,merk_id,satuan_id,product_nama,remarks,isactive,stock,min_stock,supplier_price,default_price);
+var q=ut.format("CALL `sp_pr_saveproduct`(%d,%d, %d, '%s', '%s', %d, %d, %d, %d,%d);",product_id,merk_id,satuan_id,product_nama,remarks,isactive,stock,min_stock,supplier_price,default_price);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -166,7 +166,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function productdelete(product_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_pr_deleteproduct`(%d, %d);",product_id,delete_permanent);
+var q=ut.format("CALL `sp_pr_deleteproduct`(%d, %d);",product_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

@@ -105,7 +105,7 @@ function isLogged(key,cb){
 }
 
 function restockitemview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_ri_viewrestockitemlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+var q=ut.format("CALL `sp_ri_viewrestockitemlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 
 	
 connection.query(q, function(err, rows, fields) {
@@ -116,7 +116,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function restockitemsave(restockitem_id,restock_id,product_id,price,quantity,subtotal,cb){
-var q=ut.format("CALL `simpadk`.`sp_ri_saverestockitem`( %d, %d, %d, %d, %d, %d);",restockitem_id,restock_id,product_id,price,quantity,subtotal);
+var q=ut.format("CALL `sp_ri_saverestockitem`( %d, %d, %d, %d, %d, %d);",restockitem_id,restock_id,product_id,price,quantity,subtotal);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -126,7 +126,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function restockitemdelete(merk_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_ri_deleterestockitem`(%d, %d);",merk_id,delete_permanent);
+var q=ut.format("CALL `sp_ri_deleterestockitem`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

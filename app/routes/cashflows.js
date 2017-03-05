@@ -56,7 +56,7 @@ function isLogged(key,cb){
 }
 
 function bayarutang(bayar_date,restock_id,value_bayar,remarks,cb){
-var q=ut.format("CALL `simpadk`.`sp_ut_bayarutang`( '%s', %d, %d, '%s');",bayar_date,restock_id,value_bayar,remarks);
+var q=ut.format("CALL `sp_ut_bayarutang`( '%s', %d, %d, '%s');",bayar_date,restock_id,value_bayar,remarks);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -65,7 +65,7 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 function bayarpiutang(bayar_date,order_id,value_bayar,remarks,cb){
-var q=ut.format("CALL `simpadk`.`sp_pi_bayarpiutang`(  '%s', %d, %d, '%s');",bayar_date,order_id,value_bayar,remarks);
+var q=ut.format("CALL `sp_pi_bayarpiutang`(  '%s', %d, %d, '%s');",bayar_date,order_id,value_bayar,remarks);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)

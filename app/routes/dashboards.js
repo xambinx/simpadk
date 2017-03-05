@@ -121,7 +121,7 @@ function isLogged(key,cb){
 }
 
 function dashboardsales(datepointer, cb){
-var q=ut.format("CALL `simpadk`.`sp_ds_getsalescount`('%s');",datepointer);
+var q=ut.format("CALL `sp_ds_getsalescount`('%s');",datepointer);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -131,7 +131,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function dashboardgraphic(type,datepointer, cb){
-var q=ut.format("CALL `simpadk`.`sp_ds_getgraphic`('%s','%s');",type,datepointer);
+var q=ut.format("CALL `sp_ds_getgraphic`('%s','%s');",type,datepointer);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -143,7 +143,7 @@ connection.query(q, function(err, rows, fields) {
 
 
 function dashboarddelivery( cb){
-var q=ut.format("CALL `simpadk`.`sp_ds_getpendingdeliveredorder`;");
+var q=ut.format("CALL `sp_ds_getpendingdeliveredorder`;");
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -153,7 +153,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function dashboardstock( cb){
-var q=ut.format("CALL `simpadk`.`sp_ds_getminstock`;");
+var q=ut.format("CALL `sp_ds_getminstock`;");
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)

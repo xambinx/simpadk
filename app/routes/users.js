@@ -94,7 +94,7 @@ function isLogged(key,cb){
 }
 
 function userview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_us_viewuserlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+var q=ut.format("CALL `sp_us_viewuserlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -104,7 +104,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function usersave(user_id,user_name,password,user_level,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_us_saveuser`( %d, '%s', '%s', %d, %d);",user_id,user_name,password,user_level,isactive);
+var q=ut.format("CALL `sp_us_saveuser`( %d, '%s', '%s', %d, %d);",user_id,user_name,password,user_level,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -114,7 +114,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function userdelete(user_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_us_deleteuser`(%d, %d);",user_id,delete_permanent);
+var q=ut.format("CALL `sp_us_deleteuser`(%d, %d);",user_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

@@ -123,7 +123,7 @@ function isLogged(key,cb){
 }
 
 function reportorder(date_from,date_to,customer_id,cb){
-var q=ut.format("CALL `simpadk`.`sp_od_reportorder`( '%s', '%s', %d);",date_from,date_to,customer_id);
+var q=ut.format("CALL `sp_od_reportorder`( '%s', '%s', %d);",date_from,date_to,customer_id);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -133,7 +133,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function reportrestock(date_from,date_to,supplier_id,cb){
-var q=ut.format("CALL `simpadk`.`sp_rs_reportrestock`( '%s', '%s', %d);",date_from,date_to,supplier_id);
+var q=ut.format("CALL `sp_rs_reportrestock`( '%s', '%s', %d);",date_from,date_to,supplier_id);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -143,7 +143,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function reportpiutang(date_from,date_to,customer_id,cb){
-var q=ut.format("CALL `simpadk`.`sp_pi_reportpiutang`( '%s', '%s', %d);",date_from,date_to,customer_id);
+var q=ut.format("CALL `sp_pi_reportpiutang`( '%s', '%s', %d);",date_from,date_to,customer_id);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -153,7 +153,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function reportutang(date_from,date_to,supplier_id,cb){
-var q=ut.format("CALL `simpadk`.`sp_ut_reportutang`( '%s', '%s', %d);",date_from,date_to,supplier_id);
+var q=ut.format("CALL `sp_ut_reportutang`( '%s', '%s', %d);",date_from,date_to,supplier_id);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -164,7 +164,7 @@ connection.query(q, function(err, rows, fields) {
 
 
 function reportstock(cb){
-var q=ut.format("CALL `simpadk`.`sp_pr_reportstock`();");
+var q=ut.format("CALL `sp_pr_reportstock`();");
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -173,7 +173,7 @@ connection.query(q, function(err, rows, fields) {
 	});
 };
 function reportcashflow(date_from,date_to,cb){
-var q=ut.format("CALL `simpadk`.`sp_cf_viewcashflow`( '%s', '%s');",date_from,date_to);
+var q=ut.format("CALL `sp_cf_viewcashflow`( '%s', '%s');",date_from,date_to);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)

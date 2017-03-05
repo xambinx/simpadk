@@ -114,7 +114,7 @@ function isLogged(key,cb){
 }
 
 function viewpiutang(id,page,cb){
-var q=ut.format("CALL `simpadk`.`sp_pi_viewpiutanglist`(%d, %d, %d);",id,page,rowcount);
+var q=ut.format("CALL `sp_pi_viewpiutanglist`(%d, %d, %d);",id,page,rowcount);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -124,7 +124,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function viewutang(id,page,cb){
-var q=ut.format("CALL `simpadk`.`sp_ut_viewutanglist`(%d, %d, %d);",id,page,rowcount);
+var q=ut.format("CALL `sp_ut_viewutanglist`(%d, %d, %d);",id,page,rowcount);
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)

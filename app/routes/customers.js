@@ -104,7 +104,7 @@ function isLogged(key,cb){
 }
 
 function customerview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_cs_viewcustomerlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+var q=ut.format("CALL `sp_cs_viewcustomerlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -114,7 +114,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function customersave(customer_id,name,address,phone_no,remarks,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_cs_savecustomer`( %d, '%s', '%s', '%s', '%s', %d);",customer_id,name,address,phone_no,remarks,isactive);
+var q=ut.format("CALL `sp_cs_savecustomer`( %d, '%s', '%s', '%s', '%s', %d);",customer_id,name,address,phone_no,remarks,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -124,7 +124,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function customerdelete(merk_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_cs_deletecustomer`(%d, %d);",merk_id,delete_permanent);
+var q=ut.format("CALL `sp_cs_deletecustomer`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

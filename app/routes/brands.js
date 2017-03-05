@@ -5,7 +5,9 @@ var app = exp();
 var connection = require('../config/db');
 var apikey = require('../config/apikey');
 var rowcount=30;
-
+app.get("/api/check",function(req,response){
+	response.send("connected to API successfully");
+});
 app.get("/api/:key/brands",function(req,response){
 	var key=req.params.key;
 	isLogged(key,function(log){
@@ -103,7 +105,7 @@ function isLogged(key,cb){
 }
 
 function brandview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_mr_viewmerklist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+var q=ut.format("CALL `sp_mr_viewmerklist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -113,7 +115,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function brandsave(merk_id,merk_nama,remarks,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_mr_savemerk`( %d, '%s', '%s', %d);",merk_id,merk_nama,remarks,isactive);
+var q=ut.format("CALL `sp_mr_savemerk`( %d, '%s', '%s', %d);",merk_id,merk_nama,remarks,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -123,7 +125,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function branddelete(merk_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_mr_deletemerk`(%d, %d);",merk_id,delete_permanent);
+var q=ut.format("CALL `sp_mr_deletemerk`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

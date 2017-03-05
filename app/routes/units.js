@@ -101,7 +101,7 @@ function isLogged(key,cb){
 }
 
 function unitview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_st_viewsatuanlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+var q=ut.format("CALL `sp_st_viewsatuanlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -111,7 +111,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function unitsave(satuan_id,satuan_nama,remarks,isactive,cb){
-var q=ut.format("CALL `simpadk`.`sp_st_savesatuan`( %d, '%s', '%s', %d);",satuan_id,satuan_nama,remarks,isactive);
+var q=ut.format("CALL `sp_st_savesatuan`( %d, '%s', '%s', %d);",satuan_id,satuan_nama,remarks,isactive);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -121,7 +121,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function unitdelete(satuan_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_st_deletesatuan`(%d, %d);",satuan_id,delete_permanent);
+var q=ut.format("CALL `sp_st_deletesatuan`(%d, %d);",satuan_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

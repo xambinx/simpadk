@@ -106,7 +106,7 @@ function isLogged(key,cb){
 }
 
 function orderitemview(id,page,isactive, cb){
-var q=ut.format("CALL `simpadk`.`sp_oi_vieworderitemlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+var q=ut.format("CALL `sp_oi_vieworderitemlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
 
 	
 connection.query(q, function(err, rows, fields) {
@@ -117,7 +117,8 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function orderitemsave(orderitem_id,order_id,product_id,customer_price_id,customer_price,quantity,subtotal,cb){
-var q=ut.format("CALL `simpadk`.`sp_oi_saveorderitem`( %d, %d, %d, %d, %d, %d, %d);",orderitem_id,order_id,product_id,customer_price_id,customer_price,quantity,subtotal);
+var q=ut.format("CALL `sp_oi_saveorderitem`( %d, %d, %d, %d, %d, %d, %d);",orderitem_id,order_id,product_id,customer_price_id,customer_price,quantity,subtotal);
+console.log(q);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -127,7 +128,7 @@ connection.query(q, function(err, rows, fields) {
 };
 
 function orderitemdelete(merk_id,delete_permanent,cb){
-var q=ut.format("CALL `simpadk`.`sp_oi_deleteorderitem`(%d, %d);",merk_id,delete_permanent);
+var q=ut.format("CALL `sp_oi_deleteorderitem`(%d, %d);",merk_id,delete_permanent);
 	
 connection.query(q, function(err, rows, fields) {
 		if(err)

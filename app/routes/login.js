@@ -37,7 +37,7 @@ app.post("/login",function(req,response){
 });
 
 function checklogin(username,password, cb){
-	var q=ut.format("CALL `simpadk`.`sp_us_checklogin`('%s', '%s');",username,password);
+	var q=ut.format("CALL `sp_us_checklogin`('%s', '%s');",username,password);
 	connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
