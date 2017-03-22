@@ -94,18 +94,19 @@ function isLogged(key,cb){
 }
 
 function userview(id,page,isactive, cb){
-var q=ut.format("CALL `sp_us_viewuserlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+	var q=ut.format("CALL `sp_us_viewuserlist`(%d, %d, %d, %d);",id,page,rowcount,isactive);
+		console.log(q)
+	connection.query(q, function(err, rows, fields) {
+			if(err)
+			console.log(err); // null
+			return cb(rows[0]);
+		});
 	
-connection.query(q, function(err, rows, fields) {
-		if(err)
-		console.log(err); // null
-	  	return cb(rows[0]);
-	});
 };
 
 function usersave(user_id,user_name,password,user_level,isactive,cb){
 var q=ut.format("CALL `sp_us_saveuser`( %d, '%s', '%s', %d, %d);",user_id,user_name,password,user_level,isactive);
-	
+	console.log(q)
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
@@ -115,7 +116,7 @@ connection.query(q, function(err, rows, fields) {
 
 function userdelete(user_id,delete_permanent,cb){
 var q=ut.format("CALL `sp_us_deleteuser`(%d, %d);",user_id,delete_permanent);
-	
+	console.log(q)
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null

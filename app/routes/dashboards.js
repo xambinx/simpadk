@@ -78,12 +78,12 @@ app.get("/api/:key/dashboards/graphic/:type",function(req,response){
 });
 
 
-app.get("/api/:key/dashboards/delivery",function(req,response){
+app.get("/api/:key/dashboards/utang",function(req,response){
 	var key=req.params.key;
 	isLogged(key,function(log){
 		if(log){
 			var res;
-			dashboarddelivery(function(res){
+			dashboardutang(function(res){
 				response.send(res);
 			});
 		}else{
@@ -92,7 +92,20 @@ app.get("/api/:key/dashboards/delivery",function(req,response){
 	});
 	
 });
-
+app.get("/api/:key/dashboards/piutang",function(req,response){
+	var key=req.params.key;
+	isLogged(key,function(log){
+		if(log){
+			var res;
+			dashboardpiutang(function(res){
+				response.send(res);
+			});
+		}else{
+			response.send("invalid apikey");
+		}
+	});
+	
+});
 app.get("/api/:key/dashboards/stock",function(req,response){
 	var key=req.params.key;
 	isLogged(key,function(log){
@@ -142,8 +155,8 @@ connection.query(q, function(err, rows, fields) {
 };
 
 
-function dashboarddelivery( cb){
-var q=ut.format("CALL `sp_ds_getpendingdeliveredorder`;");
+function dashboardutang( cb){
+var q=ut.format("CALL `sp_ds_getpendingutang`;");
 	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
@@ -151,7 +164,15 @@ connection.query(q, function(err, rows, fields) {
 	  	return cb(rows[0]);
 	});
 };
-
+function dashboardpiutang( cb){
+var q=ut.format("CALL `sp_ds_getpendingpiutang`;");
+	console.log(q);
+connection.query(q, function(err, rows, fields) {
+		if(err)
+		console.log(err); // null
+	  	return cb(rows[0]);
+	});
+};
 function dashboardstock( cb){
 var q=ut.format("CALL `sp_ds_getminstock`;");
 	console.log(q);

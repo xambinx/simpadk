@@ -117,7 +117,7 @@ connection.query(q, function(err, rows, fields) {
 
 function customerpricesave(customerprice_id, customer_id,product_id,price,cb){
 var q=ut.format("CALL `sp_cp_savecustomerprice`( %d, %d, %d, %d);",customerprice_id, customer_id,product_id,price);
-	
+	console.log(q);
 connection.query(q, function(err, rows, fields) {
 		if(err)
 		console.log(err); // null
